@@ -20,9 +20,8 @@ export default function Menu() {
 
   const { setSelectedTask } = UseTaskContext();
 
-  type Data = {
-    id: string, // just for not popup error type 
-    _id: number;
+  type Data = { 
+    _id: string;
     title: string;
     description: string;
     type: string;
@@ -114,7 +113,7 @@ export default function Menu() {
           </div>
         </div>
       </div>
-      <Modal openModal={openModal} setOpenModal={setOpenModal} />
+      <Modal openModal={openModal} setOpenModal={setOpenModal} action="Add new" />
       {/* <SettingsModal openSettingsModal={openSettingsModal}  setOpenSettingsModal={setOpenSettingsModal} /> */}
     </div>
   );
