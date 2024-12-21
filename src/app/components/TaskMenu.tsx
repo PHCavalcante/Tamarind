@@ -23,15 +23,15 @@ export default function TaskMenu() {
         <div className="flex flex-row items-center">
           <input
             className="w-[30px] h-[30px] mr-3"
-            id="checkbox"
             type="checkbox"
+            onChange={() => {setOpenModal((prev) => !prev); setAction("Finished")}}
           />
-          <label htmlFor="checkbox">Mark as done</label>
-          <button onClick={() => {setOpenModal(true); setAction("Edit")}} className="flex items-center">
+          <label>Mark as done</label>
+          <button onClick={() => {setOpenModal(true); setAction("Edit")}} className="flex items-center hover:scale-105">
             <Image src={edit} className="mr-1 ml-[29px]" alt="Edit Task" />
             Edit Task
           </button>
-          <button className="flex items-center">
+          <button onClick={() => {setOpenModal(true); setAction("Delete")}} className="flex items-center hover:scale-105">
             <Image
               src={deleteIcon}
               className="mr-3 ml-[29px]"

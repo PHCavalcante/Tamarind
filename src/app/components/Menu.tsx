@@ -32,13 +32,12 @@ export default function Menu() {
       try {
         const response = await axios.get("http://localhost:3000/tasks");
         setData(response.data);
-        // console.log(response.data)
       } catch (error) {
         console.error("Error while fetching data:", error);
       }
     };
     fetchTasks();
-  }, []);
+  }, [data]);
 
   const parseTasks = () => {
     return data.map((item: Data) => {
@@ -61,7 +60,7 @@ export default function Menu() {
       className={
         isOpen
           ? "hidden"
-          : "flex flex-col w-80 h-screen transition duration-0.5 bg-[#F3EDED] px-[30px] shadow-lg shadow-gray-500/50"
+          : "flex flex-col w-96 h-screen transition duration-0.5 bg-[#F3EDED] px-[30px] shadow-lg shadow-gray-500/50"
       }
     >
       <div className="flex flex-row py-4 justify-between items-center">
@@ -79,7 +78,7 @@ export default function Menu() {
               </button>
               <h2>Tasks</h2>
             </div>
-            <button onClick={() => setOpenModal(!openModal)}>
+            <button onClick={() => setOpenModal((prev) => !prev)}>
               <Image src={add} alt="Add task icon" />
             </button>
           </div>
