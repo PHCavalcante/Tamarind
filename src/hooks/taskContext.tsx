@@ -1,22 +1,17 @@
 "use client";
 
+import taskTypes from "@/types/taskTypes";
 import { createContext, useContext, useState } from "react";
 
-interface Task {
-    _id: string;
-    title: string;
-    description: string;
-};
-
 interface TaskContextProps {
-    selectedTask: Task | null;
-    setSelectedTask: (task: Task | null ) => void;
+    selectedTask: taskTypes | null;
+    setSelectedTask: (task: taskTypes | null ) => void;
 }
 
 const TaskContext = createContext<TaskContextProps | undefined>(undefined);
 
 export const TaskProvider = ({ children } : { children: React.ReactNode }) => {
-    const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+    const [selectedTask, setSelectedTask] = useState<taskTypes | null>(null);
     
     return(
         <TaskContext.Provider value={{ selectedTask, setSelectedTask }}>

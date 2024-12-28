@@ -20,7 +20,7 @@ export async function postTask(newTask: taskTypes){
 }
 export async function updateTask(task : taskTypes){
     try{
-        const response = await axios.put(`http://localhost:3000/tasks/${task.id}`,
+        const response = await axios.put(`http://localhost:3000/tasks/${task._id}`,
             {
                 "title": task.title,
                 "description": task.description,

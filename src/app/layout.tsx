@@ -1,7 +1,5 @@
 import { Metadata } from "next";
 import "./globals.css";
-import Menu from "./components/Menu";
-import Header from "./components/Header";
 import { TaskProvider } from "@/hooks/taskContext";
 
 export const metadata: Metadata = {
@@ -16,14 +14,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="flex gap-5 h-screen">
-        <TaskProvider>
-          <Menu />
-          <div className="flex flex-col w-full gap-4">
-            <Header />
+      <body className="flex h-screen">
+          <TaskProvider>
             {children}
-          </div>
-        </TaskProvider>
+          </TaskProvider>
       </body>
     </html>
   );
