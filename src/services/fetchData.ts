@@ -1,9 +1,10 @@
 import axios from "axios";
 import taskTypes
  from "@/types/taskTypes";
-export async function fetchData(){
+
+export async function fetchData(userId: string){
     try{
-        const response = await axios.get("http://localhost:3000/tasks");
+        const response = await axios.get(`http://localhost:3000/tasks/${userId}`);
         return response.data;
     } catch (error){
         console.error(error);

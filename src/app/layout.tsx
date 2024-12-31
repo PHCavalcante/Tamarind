@@ -1,6 +1,12 @@
+import {
+  ClerkProvider,
+  SignedIn,
+  SignedOut,
+  SignIn,
+} from "@clerk/nextjs";
+import { TaskProvider } from "@/hooks/taskContext";
 import { Metadata } from "next";
 import "./globals.css";
-import { TaskProvider } from "@/hooks/taskContext";
 
 export const metadata: Metadata = {
   title: "Todo-app",
@@ -13,12 +19,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="flex h-screen">
-          <TaskProvider>
-            {children}
-          </TaskProvider>
-      </body>
-    </html>
+    <ClerkProvider>
+      <TaskProvider>
+        <html lang="en">
+          <body className="flex h-screen">
+            <SignedOut>
+              <div className="flex flex-col items-center justify-center w-full">
+                <SignIn routing="hash" />
+              </div>
+            </SignedOut>
+            <SignedIn>{children}</SignedIn>
+          </body>
+        </html>
+      </TaskProvider>
+    </ClerkProvider>
   );
 }

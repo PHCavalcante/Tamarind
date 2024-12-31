@@ -2,6 +2,7 @@ import { Dispatch, SetStateAction, useState, useRef, RefObject } from "react";
 import { updateTask, deleteTask, postTask } from "@/services/fetchData";
 import { UseTaskContext } from "@/hooks/taskContext";
 import taskTypes from "@/types/taskTypes";
+import GetUserData from "@/utils/GetUserData";
 
 type modalProps = {
   openModal: boolean;
@@ -13,22 +14,27 @@ type modalProps = {
 export default function Modal({ openModal, setOpenModal, action, checkboxValue }: modalProps) {
   const { selectedTask, setSelectedTask } = UseTaskContext();
   const [value, setValue] = useState(false);
-
+  const user = GetUserData();
   const formValues = useRef({
-    id: "",
+    // id: "",
     title: "",
     description: "",
-    scheduleTime: Date
+    scheduleTime: Date,
+    userId: "",
+    createdAt: new Date().getFullYear() + "-" + (new Date().getMonth() + 1) + "-" + new Date().getDate() + " " + new Date().getHours() + ":" + new Date().getMinutes() + ":" + new Date().getSeconds(),
   });
-
-  if (selectedTask) {
-    formValues.current.id = selectedTask._id;
+  // if (selectedTask) {
+  //   formValues.current.id = selectedTask._id ?? "";
+  // }
+  if(user){
+    formValues.current.userId = user.id ?? "";
   }
+  
   function moveTaskToStorage(){
     if (selectedTask){
       const existingTasks = JSON.parse(localStorage.getItem("tasks") || "[]");
       const task = {
-        _id: formValues.current.id,
+        _id: selectedTask._id,
         title: selectedTask.title,
         description: selectedTask.description,
         isCompleted: true
@@ -49,18 +55,17 @@ export default function Modal({ openModal, setOpenModal, action, checkboxValue }
   const date = new Date();
   const formattedDate = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
   function handleAction(){
-    if (action == "Delete" || action == "Finished") {
+    if (action == "Delete" || action == "Finished"){
       return (
       <div className="flex flex-col items-center">
         <h1>{action == "Delete" ? "Are you sure you want to delete this task?" : "Mark task as done?"}</h1>
         <p>{action == "Delete" ? "This action cannot be undone!" : "Tasks marked as done are moved to done section"}</p>
-        {/* {action == "Finished" && <p>Tasks in done section are stored locally and can be deleted any time</p>} */}
         <div className="flex justify-between mt-3 w-full">
           <button className="bg-black text-[#fff] w-24 py-2 px-2 rounded-lg mx-auto hover:scale-105" onClick={() => {checkboxValue!.current = false;setOpenModal(false)}}>Cancel</button>
-          <button onClick={ action == "Delete" && !selectedTask?.isCompleted ? 
-            () => {deleteTask(formValues.current.id); setOpenModal(false); setSelectedTask(null) }
+          <button onClick={ action == "Delete" && !selectedTask!.isCompleted ? 
+            () => {deleteTask(selectedTask!._id); setOpenModal(false); setSelectedTask(null) }
             : action == "Delete" && selectedTask?.isCompleted ? () => {removeFromStorage(); setOpenModal(false); setSelectedTask(null)}
-            : () =>  {moveTaskToStorage(); deleteTask(formValues.current.id); setOpenModal(false);}
+            : () =>  {moveTaskToStorage(); deleteTask(selectedTask!._id); setOpenModal(false);}
           }
              className="bg-black text-[#fff] w-24 py-2 px-2 rounded-lg mx-auto hover:scale-105" >{action == "Delete" ? "Delete" : "Yes!"}</button>
         </div>
@@ -72,7 +77,7 @@ export default function Modal({ openModal, setOpenModal, action, checkboxValue }
           className="bg-white h-10 rounded-lg px-2"
           required
           type="text"
-          placeholder="Task name"
+          placeholder={action == "Edit" ? "New task name" : "Task name"}
           autoFocus
           autoCapitalize="words"
           maxLength={60}
@@ -83,7 +88,7 @@ export default function Modal({ openModal, setOpenModal, action, checkboxValue }
           required
           multiple={true}
           type="text"
-          placeholder="Task Description"
+          placeholder={action == "Edit" ? "New task description" : "Task description"}
           onChange={(e) => formValues.current.description = e.target.value}
         ></input>
         <div className="flex items-center justify-between max-w-[70%]">

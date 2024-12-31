@@ -1,16 +1,17 @@
 "use client";
 import Image from "next/image";
 import menu from "../../assets/menu.svg";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import add from "../../assets/add.svg";
 import dropdown from "../../assets/dropdown.svg";
 import settings from "../../assets/settings.svg";
-// import { fetchData } from "@/services/fetchData";
 import Modal from "./Modal";
 // import SettingsModal from "./SettingsModal";
 import axios from "axios";
 import arrow from "../../assets/arrow.svg";
-import { Task, UseTaskContext } from "@/hooks/taskContext";
+import { UseTaskContext } from "@/hooks/taskContext";
+import GetUserData from "@/utils/GetUserData";
+import taskTypes from "@/types/taskTypes";
 
 export default function Menu() {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,13 +20,21 @@ export default function Menu() {
   const [data, setData] = useState([]);
   const [storageTasks, setStorageTasks] = useState<never[]>([]);
   const { setSelectedTask } = UseTaskContext();
-
+  const user = GetUserData();
+  const [showSubmenu, setShowSubmenu] = useState({
+    tasks: true,
+    finishedTasks: true,
+  });
 
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/tasks");
+        if (user && data.length == 0) {
+          const response = await axios.get(
+          `http://localhost:3000/tasks/${user.id}`
+        );
         setData(response.data);
+        }
       } catch (error) {
         console.error("Error while fetching data:", error);
       }
@@ -33,13 +42,13 @@ export default function Menu() {
       setStorageTasks(storedTasks);
     };
     fetchTasks();
-  }, [data]);
+  }, [data, user]);
 
   const parseTasks = () => {
     if (data.length == 0){
       return "No tasks created ";
     }
-    return data.map((item: Task) => {
+    return data.map((item: taskTypes) => {
       const processedTask = {
         id: item._id,
         title: item.title,
@@ -55,9 +64,9 @@ export default function Menu() {
   };
   const HandleStorageTasks = () => {
     if (storageTasks.length == 0){
-      return "No tasks finished yet";
+      return "No tasks finished yet 😴";
     }
-        return storageTasks.map((task:Task) => {
+        return storageTasks.map((task:taskTypes) => {
           const processedTask = {
             id: task._id,
             title: task.title,
@@ -65,7 +74,7 @@ export default function Menu() {
           };
           return (
             <li onClick={() => setSelectedTask(task)} className="flex gap-2" key={processedTask.id}>
-              <Image src={arrow} alt="Task icon" width={20} />
+              <Image src={arrow} alt="Task icon" width={20} height={20} />
               <button>{processedTask.title}</button>
             </li>
           );
@@ -81,7 +90,9 @@ export default function Menu() {
       }
     >
       <div className="flex flex-row py-4 justify-between items-center">
-        <h1 className="font-bold text-2xl">Hello! User</h1>
+        <h1 className="font-bold text-2xl">
+          Hello! {user ? user.firstName : "User"}
+        </h1>
         <button onClick={() => setIsOpen(!isOpen)}>
           <Image src={menu} width={40} alt="Menu Icon" />
         </button>
@@ -90,8 +101,12 @@ export default function Menu() {
         <div className="flex flex-col h-full">
           <div className="flex flex-row items-center justify-between">
             <div className="flex items-center content-center gap-[14px]">
-              <button>
-                <Image src={dropdown} alt="Tasks Dropwdown" />
+              <button
+                onClick={() =>
+                  setShowSubmenu((prev) => ({ ...prev, tasks: !prev.tasks }))
+                }
+              >
+                <Image src={dropdown} width={20} alt="Tasks Dropdown" />
               </button>
               <h2>Tasks</h2>
             </div>
@@ -99,25 +114,38 @@ export default function Menu() {
               <Image src={add} alt="Add task icon" />
             </button>
           </div>
-          <ul className="my-2 mx-2">
+          <ul
+            className={
+              showSubmenu.tasks
+                ? "my-2 mx-2 transition duration-150 ease-out"
+                : "hidden"
+            }
+          >
             {parseTasks()}
           </ul>
           <hr className="border-1 border-neutral-700 my-[10px]" />
           <div className="flex flex-row items-center justify-between">
             <div className="flex items-center content-center gap-[14px]">
-              <button>
-                <Image src={dropdown} alt="Finished tasks dropwdown" />
+              <button
+                onClick={() =>
+                  setShowSubmenu((prev) => ({
+                    ...prev,
+                    finishedTasks: !prev.finishedTasks,
+                  }))
+                }
+              >
+                <Image src={dropdown} width={20} alt="Finished tasks dropdown" />
               </button>
               <h2>Finished Tasks</h2>
             </div>
           </div>
-          <ul className="my-2 mx-2">
+          <ul className={showSubmenu.finishedTasks ? "my-2 mx-2" : "hidden"}>
             {HandleStorageTasks()}
           </ul>
           <hr className="border-1 border-neutral-700 my-[10px]" />
-          <div className="flex-grow"></div>   
+          <div className="flex-grow"></div>
           <div className="flex gap-3">
-            <button className="flex items-center">
+            <button className="flex items-center w-full p-1 transition ease-in delay-150 rounded-md hover:bg-[#e4dede]">
               <Image
                 className="mr-3"
                 src={settings}
@@ -129,7 +157,11 @@ export default function Menu() {
           </div>
         </div>
       </div>
-      <Modal openModal={openModal} setOpenModal={setOpenModal} action="Add new" />
+      <Modal
+        openModal={openModal}
+        setOpenModal={setOpenModal}
+        action="Add new"
+      />
       {/* <SettingsModal openSettingsModal={openSettingsModal}  setOpenSettingsModal={setOpenSettingsModal} /> */}
     </div>
   );

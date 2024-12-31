@@ -1,6 +1,4 @@
-import Image from "next/image";
-import defaultUserPicture from "../../assets/defaultUserPicture.svg"
-
+import { UserButton } from "@clerk/nextjs";
 export default function Header(){
     const week = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const date = new Date();
@@ -9,8 +7,8 @@ export default function Header(){
         <header className="flex w-full h-16 justify-between bg-[#F3EDED] content-center py-4 px-3 rounded-2xl shadow-lg">
             <h1 className="text-2xl font-bold">Tasks</h1>
             <div className="flex items-center gap-3">
-                <p>{weekDay}</p>
-                <Image src={defaultUserPicture} alt="User Picture" />
+                <p className="font-semibold">{weekDay}</p>
+                <UserButton />
             </div>
         </header>
     );
