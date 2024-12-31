@@ -4,6 +4,8 @@ type taskTypes = {
     description: string;
     scheduleDate?: Date;
     isCompleted?: boolean;
+    userId?: string;
+    createdAt?: string;
 };
 
 export default taskTypes;
