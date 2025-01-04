@@ -4,14 +4,14 @@ import taskTypes from "@/types/taskTypes";
 import { createContext, useContext, useState } from "react";
 
 interface TaskContextProps {
-    selectedTask: taskTypes | null;
-    setSelectedTask: (task: taskTypes | null ) => void;
+    selectedTask: taskTypes | string | null;
+    setSelectedTask: (task: taskTypes| "List" | "Note" |  null ) => void;
 }
 
 const TaskContext = createContext<TaskContextProps | undefined>(undefined);
 
 export const TaskProvider = ({ children } : { children: React.ReactNode }) => {
-    const [selectedTask, setSelectedTask] = useState<taskTypes | null>(null);
+    const [selectedTask, setSelectedTask] = useState<taskTypes | string | null>(null);
     
     return(
         <TaskContext.Provider value={{ selectedTask, setSelectedTask }}>
