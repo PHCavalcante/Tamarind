@@ -2,6 +2,22 @@ import axios from "axios";
 import taskTypes
  from "@/types/taskTypes";
 
+type noteProps = {
+    _id?: string,
+    title: string;
+    description: string;
+    userId: string;
+    createdAt: string;
+};
+type listTypes = {
+    _id?: string;
+    userId: string;
+    title: string;
+    createdAt: string,
+    tasksCounter: number;
+    tasksStatus: boolean[]
+};
+
 export async function fetchData(userId: string){
     try{
         const response = await axios.get(`http://localhost:3000/tasks/${userId}`);
@@ -39,5 +55,48 @@ export async function deleteTask(taskId : string){
         return response;
     } catch (error){
         console.error(error);
+    }
+}
+export async function postNote(newNote:noteProps){
+    try{
+        const response = await axios.post("http://localhost:3000/notes", newNote);
+        console.log(response);
+        return response;
+    } catch (error){
+        console.error(error);
+    }
+}
+export async function deleteNote(noteId: string){
+    try{
+        const response = await axios.delete(`http://localhost:3000/notes/${noteId}`)
+        console.log(response);
+        return response;
+    } catch (error){
+        console.log(error);
+    }
+}
+export async function updateNote(note: noteProps){
+    try{
+        const response = await axios.put(`http://localhost:3000/notes/${note._id}`,
+            {
+                title: note.title,
+                description: note.description,
+                createdAt: note.createdAt,
+                userId: note.userId
+            }
+        );
+        console.log(response);
+        return response;
+    } catch (error){
+        console.log(error);
+    }
+}
+export async function postList(newList: listTypes){
+    try{
+        const response = await axios.post("http://localhost:3000/lists", newList);
+        console.log(response);
+        return response;
+    } catch (error){
+        console.log(error);
     }
 }
