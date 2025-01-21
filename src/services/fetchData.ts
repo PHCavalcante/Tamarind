@@ -41,7 +41,24 @@ export async function updateTask(task : taskTypes){
             {
                 "title": task.title,
                 "description": task.description,
-                "scheduleDate": task.scheduleDate
+                "scheduleDate": task.scheduleDate,
+                "isCompleted": task.isCompleted,
+                "type": task.type
+            });
+            console.log(response);
+            return response.data;
+    } catch (error){
+        console.error(error);
+    }
+}
+export async function markTaskAsCompleted(task: taskTypes){
+    try{
+        const response = await axios.put(`http://localhost:3000/tasks/${task._id}`, 
+            {
+                 "title": task.title,
+                "description": task.description,
+                "scheduleDate": task.scheduleDate,
+                "isCompleted": true
             });
             console.log(response);
             return response.data;
@@ -94,6 +111,19 @@ export async function updateNote(note: noteProps){
 export async function postList(newList: listTypes){
     try{
         const response = await axios.post("http://localhost:3000/lists", newList);
+        console.log(response);
+        return response;
+    } catch (error){
+        console.log(error);
+    }
+}
+export async function updateList(listId: string, tasksStatus : boolean[]){
+    try{
+        const response = await axios.put(`http://localhost:3000/lists/${listId}`,
+            {
+                tasksStatus: tasksStatus
+            }
+        );
         console.log(response);
         return response;
     } catch (error){
