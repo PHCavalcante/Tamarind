@@ -2,21 +2,8 @@ import axios from "axios";
 import taskTypes
  from "@/types/taskTypes";
 
-type noteProps = {
-    _id?: string,
-    title: string;
-    description: string;
-    userId: string;
-    createdAt: string;
-};
-type listTypes = {
-    _id?: string;
-    userId: string;
-    title: string;
-    createdAt: string,
-    tasksCounter: number;
-    tasksStatus: boolean[]
-};
+type noteProps = Pick<taskTypes, "_id" | "title" | "description" | "userId" | "createdAt">
+type listTypes = Pick<taskTypes, "_id" | "userId" | "title" | "createdAt"> & {tasksCounter: number; tasksStatus: boolean[]}
 
 export async function fetchData(userId: string){
     try{
@@ -43,7 +30,8 @@ export async function updateTask(task : taskTypes){
                 "description": task.description,
                 "scheduleDate": task.scheduleDate,
                 "isCompleted": task.isCompleted,
-                "type": task.type
+                "type": task.type,
+                "inProgress": task.inProgress
             });
             console.log(response);
             return response.data;
@@ -129,4 +117,13 @@ export async function updateList(listId: string, tasksStatus : boolean[]){
     } catch (error){
         console.log(error);
     }
+}
+export async function deleteList(listId: string){
+     try {
+       const response = await axios.delete(`http://localhost:3000/lists/${listId}`);
+       console.log(response);
+       return response;
+     } catch (error) {
+       console.log(error);
+     }
 }
