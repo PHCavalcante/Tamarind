@@ -7,6 +7,7 @@ type taskTypes = {
     isCompleted?: boolean;
     userId?: string;
     createdAt?: string;
+    inProgress?: boolean;
 };
 
 export default taskTypes;
