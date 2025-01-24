@@ -1,9 +1,5 @@
 import axios from "axios";
-import taskTypes
- from "@/types/taskTypes";
-
-type noteProps = Pick<taskTypes, "_id" | "title" | "description" | "userId" | "createdAt">
-type listTypes = Pick<taskTypes, "_id" | "userId" | "title" | "createdAt"> & {tasksCounter: number; tasksStatus: boolean[]}
+import { taskTypes, noteTypes, listTypes } from "@/types/dataTypes";
 
 export async function fetchData(userId: string){
     try{
@@ -62,7 +58,7 @@ export async function deleteTask(taskId : string){
         console.error(error);
     }
 }
-export async function postNote(newNote:noteProps){
+export async function postNote(newNote:noteTypes){
     try{
         const response = await axios.post("http://localhost:3000/notes", newNote);
         console.log(response);
@@ -80,7 +76,7 @@ export async function deleteNote(noteId: string){
         console.log(error);
     }
 }
-export async function updateNote(note: noteProps){
+export async function updateNote(note: noteTypes){
     try{
         const response = await axios.put(`http://localhost:3000/notes/${note._id}`,
             {
