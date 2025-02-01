@@ -1,139 +1,206 @@
-import { Dispatch, SetStateAction, useState, useRef, RefObject } from "react";
-import { updateTask, deleteTask, postTask } from "@/services/fetchData";
-import { UseTaskContext } from "@/hooks/taskContext";
-import taskTypes from "@/types/taskTypes";
 import GetUserData from "@/utils/GetUserData";
+import { UseTaskContext } from "@/hooks/taskContext";
+import { taskTypes } from "@/types/dataTypes";
+import { Dispatch, SetStateAction, useState, useRef, RefObject } from "react";
+import {
+  updateTask,
+  deleteTask,
+  postTask,
+  deleteNote,
+  updateNote,
+  deleteList,
+} from "@/services/fetchData";
+import createdAt from "@/utils/getFormattedDateTime";
 
 type modalProps = {
   openModal: boolean;
   setOpenModal: Dispatch<SetStateAction<boolean>>;
   action: string;
-  checkboxValue?: RefObject<boolean>
+  checkboxValue?: RefObject<boolean>;
 };
 
-export default function Modal({ openModal, setOpenModal, action, checkboxValue }: modalProps) {
+export default function Modal({
+  openModal,
+  setOpenModal,
+  action,
+  checkboxValue,
+}: modalProps) {
+  const user = GetUserData();
   const { selectedTask, setSelectedTask } = UseTaskContext();
   const [value, setValue] = useState(false);
-  const user = GetUserData();
   const formValues = useRef({
-    // id: "",
+    _id: selectedTask?._id,
     title: "",
     description: "",
-    scheduleTime: Date,
+    scheduleDate: "",
     userId: "",
-    createdAt: new Date().getFullYear() + "-" + (new Date().getMonth() + 1) + "-" + new Date().getDate() + " " + new Date().getHours() + ":" + new Date().getMinutes() + ":" + new Date().getSeconds(),
+    createdAt: createdAt,
+    type: "",
+    isCompleted: false,
+    inProgress: false,
   });
-  // if (selectedTask) {
-  //   formValues.current.id = selectedTask._id ?? "";
-  // }
-  if(user){
+  if (user) {
     formValues.current.userId = user.id ?? "";
   }
-  
-  function moveTaskToStorage(){
-    if (selectedTask){
-      const existingTasks = JSON.parse(localStorage.getItem("tasks") || "[]");
-      const task = {
-        _id: selectedTask._id,
-        title: selectedTask.title,
-        description: selectedTask.description,
-        isCompleted: true
-      };
-      const updatedTasks = [...existingTasks, task];
-      localStorage.setItem("tasks", JSON.stringify(updatedTasks));
-    }
-  }
-  function removeFromStorage(){
-    if (selectedTask){
-      const existingTasks:taskTypes[] = JSON.parse(localStorage.getItem("tasks") || "[]");
-      const updatedTasks = existingTasks.filter((task) => task._id !== String(selectedTask._id));
+  function removeFromStorage() {
+    if (selectedTask) {
+      const existingTasks: taskTypes[] = JSON.parse(
+        localStorage.getItem("tasks") || "[]"
+      );
+      const updatedTasks = existingTasks.filter(
+        (task) => task._id !== String(selectedTask._id)
+      );
       console.log(updatedTasks);
       localStorage.setItem("tasks", JSON.stringify(updatedTasks));
     }
   }
-  
-  const date = new Date();
-  const formattedDate = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
-  function handleAction(){
-    if (action == "Delete" || action == "Finished"){
+  function handleAction() {
+    if (action == "Delete" || action == "Finished") {
       return (
-      <div className="flex flex-col items-center">
-        <h1>{action == "Delete" ? "Are you sure you want to delete this task?" : "Mark task as done?"}</h1>
-        <p>{action == "Delete" ? "This action cannot be undone!" : "Tasks marked as done are moved to done section"}</p>
-        <div className="flex justify-between mt-3 w-full">
-          <button className="bg-black text-[#fff] w-24 py-2 px-2 rounded-lg mx-auto hover:scale-105" onClick={() => {checkboxValue!.current = false;setOpenModal(false)}}>Cancel</button>
-          <button onClick={ action == "Delete" && !selectedTask!.isCompleted ? 
-            () => {deleteTask(selectedTask!._id); setOpenModal(false); setSelectedTask(null) }
-            : action == "Delete" && selectedTask?.isCompleted ? () => {removeFromStorage(); setOpenModal(false); setSelectedTask(null)}
-            : () =>  {moveTaskToStorage(); deleteTask(selectedTask!._id); setOpenModal(false);}
-          }
-             className="bg-black text-[#fff] w-24 py-2 px-2 rounded-lg mx-auto hover:scale-105" >{action == "Delete" ? "Delete" : "Yes!"}</button>
-        </div>
-      </div>);  
-    }else{
-      return(
-        <form className="flex flex-col gap-5">
-        <input
-          className="bg-white h-10 rounded-lg px-2"
-          required
-          type="text"
-          placeholder={action == "Edit" ? "New task name" : "Task name"}
-          autoFocus
-          autoCapitalize="words"
-          maxLength={60}
-          onChange={(e) => (formValues.current.title = e.target.value)}
-        />
-        <input
-          className="bg-white h-40 rounded-lg px-2 w-[800px] max-w-full"
-          required
-          multiple={true}
-          type="text"
-          placeholder={action == "Edit" ? "New task description" : "Task description"}
-          onChange={(e) => formValues.current.description = e.target.value}
-        ></input>
-        <div className="flex items-center justify-between max-w-[70%]">
-          <div className="flex items-center gap-2">
-            <input
-              className="w-5 h-5 "
-              type="checkbox"
-              checked={value}
-              onChange={() => setValue(!value)}
-            />
-            <label>Schedule Task?</label>
+        <div className="flex flex-col items-center">
+          <h1>
+            {action == "Delete"
+              ? `Are you sure you want to delete this ${selectedTask?.type}?`
+              : "Mark task as done?"}
+          </h1>
+          <p>
+            {action == "Delete"
+              ? "This action cannot be undone!"
+              : "Tasks marked as done are moved to Finished section"}
+          </p>
+          <div className="flex justify-between mt-3 w-full">
+            <button
+              className="text-black w-24 py-2 px-2 rounded-lg mx-auto border-2 font-bold border-black hover:scale-105"
+              onClick={() => {
+                checkboxValue!.current = false;
+                setOpenModal(false);
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={
+                action == "Delete" &&
+                !selectedTask!.isCompleted &&
+                selectedTask?.type == "task"
+                  ? () => {
+                      deleteTask(selectedTask._id!);
+                      setOpenModal(false);
+                      setSelectedTask(null);
+                    }
+                  : action == "Delete" && selectedTask?.isCompleted
+                  ? () => {
+                      removeFromStorage();
+                      setOpenModal(false);
+                      setSelectedTask(null);
+                    }
+                  : action == "Delete" && selectedTask?.type == "note"
+                  ? () => {
+                      deleteNote(selectedTask!._id!);
+                      setSelectedTask(null);
+                    }
+                  : action == "Delete" && selectedTask?.type == "list"
+                  ? () => {
+                      deleteList(selectedTask._id!);
+                      setSelectedTask(null);
+                    }
+                  : () => {
+                      selectedTask!.isCompleted = true;
+                      updateTask(selectedTask!);
+                      setOpenModal(false);
+                    }
+              }
+              className="bg-[#FF5C5C] text-white font-bold w-24 py-2 px-2 rounded-lg mx-auto hover:scale-105"
+            >
+              {action == "Delete" ? "Delete" : "Yes!"}
+            </button>
           </div>
-          {value && <div className="flex items-center gap-3">
-          <label>Schedule Time</label>
+        </div>
+      );
+    } else {
+      return (
+        <form className="flex flex-col gap-5">
           <input
-            className="bg-white max-w-fit h-10 rounded-lg px-2"
-            type="datetime-local"
+            className="bg-white h-10 rounded-lg px-2"
             required
-            min={formattedDate}
-            defaultValue={formattedDate}
-            max="2024-12-22"
-            // onChange={(e) => (formValues.current.scheduleTime = e.target.value)}
+            type="text"
+            placeholder={
+              action == "Edit" ? `New ${selectedTask?.type} name` : "Task name"
+            }
+            autoFocus
+            autoCapitalize="words"
+            maxLength={60}
+            onChange={(e) => (formValues.current.title = e.target.value)}
           />
-          </div>}
-        </div>
-        <div className="flex justify-between mt-3 w-[50%] mx-auto">
-          <button 
-          className="bg-black text-[#fff] max-w-fit py-2 px-2 rounded-lg mx-auto hover:scale-105"
-          onClick={() => setOpenModal(false)}
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            onClick={() => action == "Edit" ? updateTask(formValues.current) : action == "Add new" ? postTask(formValues.current) : null}
-            className="bg-black text-[#fff] max-w-fit py-2 px-2 rounded-lg mx-auto hover:scale-105"
-          >
-            {action} task
-          </button>
-        </div>
-      </form>
+          <textarea
+            className="bg-white h-40 rounded-lg p-2 w-[800px] max-w-full"
+            maxLength={500}
+            placeholder={
+              action == "Edit"
+                ? `New ${selectedTask?.type} description`
+                : "Task description"
+            }
+            onChange={(e) => (formValues.current.description = e.target.value)}
+          />
+          <div className="flex items-center justify-between max-w-[70%]">
+            {action == "Add new" && (
+              <div className="flex items-center gap-2">
+                <input
+                  className="w-5 h-5 "
+                  type="checkbox"
+                  checked={value}
+                  onChange={() => setValue(!value)}
+                />
+                <label>Schedule Task?</label>
+              </div>
+            )}
+            {value && (
+              <div className="flex items-center gap-3">
+                <label>Schedule Time</label>
+                <input
+                  className="bg-white max-w-fit h-10 rounded-lg px-2"
+                  type="datetime-local"
+                  required
+                  min={createdAt}
+                  defaultValue={createdAt}
+                  max="2024-12-22"
+                  onChange={(e) => {
+                    formValues.current.scheduleDate =
+                      new Date(e.target.value).toLocaleDateString() +
+                      " " +
+                      new Date(e.target.value).toLocaleTimeString();
+                    console.log(formValues.current.scheduleDate);
+                  }}
+                />
+              </div>
+            )}
+          </div>
+          <div className="flex justify-between mt-3 w-[50%] mx-auto">
+            <button
+              className="text-black font-bold max-w-fit py-2 px-2 rounded-lg mx-auto border-2 border-black hover:scale-105"
+              onClick={() => setOpenModal(false)}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() =>
+                action == "Edit" && selectedTask?.type == "task"
+                  ? updateTask({ ...formValues.current, type: "task" })
+                  : action == "Add new"
+                  ? postTask({ ...formValues.current, type: "task" })
+                  : action == "Edit" && selectedTask?.type == "note"
+                  ? updateNote(formValues.current)
+                  : null
+              }
+              className="bg-[#FF5C5C] font-bold text-[#fff] max-w-fit py-2 px-2 rounded-lg mx-auto hover:scale-105"
+            >
+              {action} {selectedTask?.type == "note" ? "note" : "task"}
+            </button>
+          </div>
+        </form>
       );
     }
   }
-
   return (
     <div
       className={
@@ -142,17 +209,23 @@ export default function Modal({ openModal, setOpenModal, action, checkboxValue }
           : "hidden"
       }
     >
-      <div onClick={(e) => e.stopPropagation()} className="flex flex-col bg-[#F3EDED] w-fit max-w-[50%] mx-auto rounded-xl py-5 px-5 transform transition-all duration-300 animate-modal">
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="flex flex-col bg-[#F3EDED] w-fit max-w-[50%] mx-auto rounded-xl py-5 px-5 transform transition-all duration-300 animate-modal"
+      >
         <div className="flex justify-between mb-5">
-          <h2 className="font-bold text-2xl mx-auto">{action} task</h2>
-          {/* <span
-            onClick={() => setOpenModal(false)}
-            className="text-3xl font-bold hover:cursor-pointer"
-            >
-            &times;
-          </span> */}
+          <h2 className="font-bold text-2xl mx-auto">
+            {action}{" "}
+            {selectedTask?.type == "note"
+              ? "note"
+              : selectedTask?.type == "task"
+              ? "task"
+              : selectedTask?.type == "list"
+                ? "lsit"
+              : "task"}
+          </h2>
         </div>
-            {handleAction()}
+        {handleAction()}
       </div>
     </div>
   );
