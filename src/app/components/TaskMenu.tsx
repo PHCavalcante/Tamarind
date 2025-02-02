@@ -3,7 +3,7 @@ import Image from "next/image";
 import deleteIcon from "../../assets/deleteIcon.svg";
 import edit from "../../assets/edit.svg";
 import Modal from "./Modal";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import timer from "../../assets/timer.svg";
 import Pomodoro from "./Pomodoro";
 import { updateList, updateTask } from "@/services/fetchData";
@@ -13,14 +13,19 @@ export default function TaskMenu() {
   const { selectedTask } = UseTaskContext();
   const [openModal, setOpenModal] = useState(false);
   const [openPomodoro, setOpenPomodoro] = useState(false);
-  const [tasksStates, setTasksStates] = useState(selectedTask?.tasksStatus);
+  const [tasksStates, setTasksStates] = useState<boolean[]>(selectedTask?.tasksStatus || []);
   const [action, setAction] = useState("");
   const checkboxValue = useRef(false);
 
-  if (!selectedTask) return null;
+  useEffect(() => {
+    if (!selectedTask?.tasksStatus) return;
+    setTasksStates(selectedTask?.tasksStatus);
+  },[selectedTask]);
 
+  if (!selectedTask) return null;
+  console.log(`tasksStates value: ${tasksStates}`);
   const handleCheckboxChange = (index: number) => {
-    const newIsChecked = [...tasksStates as boolean[]];
+    const newIsChecked = [...tasksStates];
     newIsChecked[index] = !newIsChecked[index];
     console.log(`valor do newIsChecked: ${newIsChecked}`);
     setTasksStates(newIsChecked);
@@ -29,7 +34,7 @@ export default function TaskMenu() {
   };
    function handleLists() {
     const items = [];
-    if (selectedTask!.tasksCounter && selectedTask!.tasksStatus && selectedTask!.tasksTitles){
+    if (selectedTask?.tasksCounter && selectedTask?.tasksStatus && selectedTask?.tasksTitles){
     for (let i = 1; i <= selectedTask!.tasksCounter; i++) {
       items.push(
         <li key={i - 1} className="flex items-center gap-2">
@@ -37,7 +42,7 @@ export default function TaskMenu() {
             <div className="flex items-center">
               <input
                 type="checkbox"
-                checked={tasksStates && tasksStates[i - 1]}
+                checked={tasksStates[i - 1] || false}
                 className="w-5 h-5 peer mr-2 hover:cursor-pointer"
                 onChange={() => handleCheckboxChange(i - 1)}
               />
@@ -45,18 +50,6 @@ export default function TaskMenu() {
                 htmlFor={`task ${i}`}
                 className="text-xl font-bold peer-checked:line-through peer-checked:decoration-solid peer-checked:decoration-4"
               >
-                {/* <input
-                  id={`task ${i}`}
-                  type="text"
-                  placeholder="Task title"
-                  autoFocus
-                  autoCapitalize="words"
-                  autoComplete="off"
-                  // onInput={(e: any) => handleKeyDown(e)}
-                  className={`${
-                    isChecked[i - 1] && "line-through decoration-dashed"
-                  } bg-transparent focus:outline-none text-xl font-bold w-full`}
-                /> */}
                 {selectedTask?.tasksTitles[i - 1]}
               </label>
             </div>
@@ -215,7 +208,7 @@ export default function TaskMenu() {
         )}
       </div>
       <h3 className="mt-[25px] font-semibold">{selectedTask.description}</h3>
-      <ul className="flex flex-col gap-2 my-4 mx-5">{handleLists()}</ul>
+      {selectedTask.type == "list" && selectedTask.tasksStatus && <ul className="flex flex-col gap-2 my-4 mx-5">{handleLists()}</ul>}
       {selectedTask.type == "list" && (
         <div className="flex items-center gap-1 mx-4">
           <label className="italic opacity-50">{calculateCompletedListPercentage()}%</label>
