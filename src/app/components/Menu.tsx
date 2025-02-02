@@ -1,103 +1,283 @@
 "use client";
 import Image from "next/image";
 import menu from "../../assets/menu.svg";
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, JSX } from "react";
 import add from "../../assets/add.svg";
 import dropdown from "../../assets/dropdown.svg";
 import settings from "../../assets/settings.svg";
 import Modal from "./Modal";
-// import SettingsModal from "./SettingsModal";
+import SettingsModal from "./SettingsModal";
 import axios from "axios";
 import arrow from "../../assets/arrow.svg";
 import { UseTaskContext } from "@/hooks/taskContext";
 import GetUserData from "@/utils/GetUserData";
-import taskTypes from "@/types/taskTypes";
+import { combination, listTypes, noteTypes, taskTypes } from "@/types/dataTypes";
+import arrowRight from "../../assets/arrowRight.svg";
+import kanban from "../../assets/kanban.svg";
+import search from "../../assets/search.svg";
+import logo from "../../assets/logo.svg";
 
 export default function Menu() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
   const [openModal, setOpenModal] = useState(false);
-  // const [openSettingsModal, setOpenSettingsModal] = useState(false)
+  const [openSettingsModal, setOpenSettingsModal] = useState(false)
   const [data, setData] = useState([]);
-  const [storageTasks, setStorageTasks] = useState<never[]>([]);
+  const [notes, setNotes] = useState([]);
+  const [lists, setLists] = useState([]);
+  // const [action, setAction] = useState("");
   const { setSelectedTask } = UseTaskContext();
   const user = GetUserData();
   const [showSubmenu, setShowSubmenu] = useState({
     tasks: true,
+    inProgress: true,
     finishedTasks: true,
+    lists: true,
+    notes: true,
   });
 
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        if (user && data.length == 0) {
+        if (!user) return;
+        if (data.length == 0) {
           const response = await axios.get(
-          `http://localhost:3000/tasks/${user.id}`
-        );
-        setData(response.data);
+            `http://localhost:3000/tasks/${user.id}`
+          );
+          setData(response.data);
+        }
+        if (notes.length == 0) {
+          const response = await axios.get(
+            `http://localhost:3000/notes/${user.id}`
+          );
+          setNotes(response.data);
+        }
+        if (lists.length == 0) {
+          const response = await axios.get(
+            `http://localhost:3000/lists/${user.id}`
+          );
+          setLists(response.data);
         }
       } catch (error) {
         console.error("Error while fetching data:", error);
       }
-      const storedTasks = JSON.parse(localStorage.getItem("tasks") || "[]");
-      setStorageTasks(storedTasks);
     };
     fetchTasks();
-  }, [data, user]);
+  }, [user]);
 
   const parseTasks = () => {
-    if (data.length == 0){
+    const notCompletedTasks = data.filter((task:taskTypes) => task.isCompleted == false && task.inProgress == false);
+    if (notCompletedTasks.length == 0) {
       return "No tasks created ";
     }
-    return data.map((item: taskTypes) => {
+    return notCompletedTasks.map((task: taskTypes) => {
       const processedTask = {
-        id: item._id,
-        title: item.title,
-        description: item.description,
+        id: task._id,
+        title: task.title,
+        description: task.description,
       };
       return (
-        <li onClick={() => setSelectedTask(item)} className="flex gap-2" key={processedTask.id}>
-          <Image src={arrow} alt="Task icon" width={20} />
+        <li
+          onClick={() => setSelectedTask(task)}
+          className="flex gap-2 my-1 text-ellipsis whitespace-nowrap overflow-hidden transition ease-in delay-100 rounded hover:bg-[#e4dede]"
+          key={processedTask.id}
+        >
+          <Image src={arrow} alt="Task icon" />
+          <button className="">{processedTask.title}</button>
+        </li>
+      );
+    });
+  };
+  const parseInProgressTasks = () => {
+    const tasksInProgress = data.filter((task:taskTypes) => task.inProgress == true);
+    if (tasksInProgress.length == 0) {
+      return "No tasks in progress ";
+    }
+    return tasksInProgress.map((task: taskTypes) => {
+      const processedTask = {
+        id: task._id,
+        title: task.title,
+        description: task.description,
+      };
+      return (
+        <li
+          onClick={() => setSelectedTask(task)}
+          className="flex gap-2 my-1 text-ellipsis whitespace-nowrap overflow-hidden transition ease-in delay-100 rounded hover:bg-[#e4dede]"
+          key={processedTask.id}
+        >
+          <Image src={arrow} alt="Task icon" />
+          <button className="">{processedTask.title}</button>
+        </li>
+      );
+    });
+  };
+  const parseNotes = () => {
+    if (notes.length == 0) return "No notes created yet";
+
+    return notes.map((note: noteTypes) => {
+      // note with taskTypes is just for type checking and to not display errors by missing type or neither using any
+      return (
+        <li
+          key={note._id}
+          className="flex gap-2 my-1 text-ellipsis whitespace-nowrap overflow-hidden transition ease-in delay-100 rounded hover:bg-[#e4dede]"
+          onClick={() => setSelectedTask(note)}
+        >
+          <Image src={arrow} alt="Task icon" />
+          <button dangerouslySetInnerHTML={{ __html: note.title }}></button>
+        </li>
+      );
+    });
+  };
+  const parseLists = () => {
+    if (lists.length == 0) return "No lists to show";
+
+    return lists.map((list: listTypes) => {
+      return (
+        <li
+          key={list._id}
+          className="flex gap-2 my-1 text-ellipsis whitespace-nowrap overflow-hidden transition ease-in delay-100 rounded hover:bg-[#e4dede]"
+          onClick={() => setSelectedTask(list)}
+        >
+          <Image src={arrow} alt="Task icon" />
+          <button>{list.title}</button>
+        </li>
+      );
+    });
+  };
+  const HandleCompletedTasks = () => {
+    const completedTasks = data.filter((task:taskTypes) => task.isCompleted == true);
+    if (completedTasks.length == 0) {
+      return "No tasks finished yet 😴";
+    }
+    return completedTasks.map((task: taskTypes) => {
+      const processedTask = {
+        id: task._id,
+        title: task.title,
+        description: task.description,
+      };
+      return (
+        <li
+          onClick={() => setSelectedTask(task)}
+          className="flex gap-2 hover:bg-[#e4dede]"
+          key={processedTask.id}
+        >
+          <Image src={arrow} alt="Task icon" />
           <button>{processedTask.title}</button>
         </li>
       );
     });
   };
-  const HandleStorageTasks = () => {
-    if (storageTasks.length == 0){
-      return "No tasks finished yet 😴";
-    }
-        return storageTasks.map((task:taskTypes) => {
-          const processedTask = {
-            id: task._id,
-            title: task.title,
-            description: task.description,
-          };
-          return (
-            <li onClick={() => setSelectedTask(task)} className="flex gap-2" key={processedTask.id}>
-              <Image src={arrow} alt="Task icon" width={20} height={20} />
-              <button>{processedTask.title}</button>
-            </li>
-          );
-        })         
+
+  const [searchItems, setSearchItems] = useState<JSX.Element[]>([]);
+
+  function parseSearch(value:string){
+    if (value == "") {setSearchItems([]); return;}
+    const allData = data.concat(notes).concat(lists);
+    const searchData = allData.filter((item: combination) =>
+      item.title.startsWith(value)
+    ).map(
+      (item: taskTypes) => {
+        return (
+          <li
+            className="flex justify-between cursor-pointer hover:bg-[#e4dede] px-3"
+            key={item._id}
+            onClick={() => {setSelectedTask(item); setSearchItems([])}}
+          >
+            <p className="font-bold">{item.title}</p>
+            <p className="italic">{item.type}</p>
+          </li>
+        );
+      }
+    );
+      // console.log(searchData);
+      setSearchItems(searchData);
   }
 
   return (
     <div
       className={
         isOpen
-          ? "hidden"
-          : "flex flex-col w-[450px] h-screen transition duration-0.5 bg-[#F3EDED] px-[30px] shadow-lg shadow-gray-500/50"
+          ? "flex flex-col min-w-96 w-96 h-screen transition-all duration-500 bg-[#F3EDED] px-[30px] shadow-lg shadow-gray-500/50"
+          : "flex flex-col h-screen bg-[#F3EDED] shadow-lg shadow-gray-500/50 px-2 items-center gap-3 transition-all duration-500"
       }
     >
-      <div className="flex flex-row py-4 justify-between items-center">
-        <h1 className="font-bold text-2xl">
-          Hello! {user ? user.firstName : "User"}
-        </h1>
-        <button onClick={() => setIsOpen(!isOpen)}>
+      <div
+        className={
+          isOpen
+            ? "flex flex-row py-4 justify-between items-center"
+            : "flex flex-col"
+        }
+      >
+        <div className="flex items-center w-full">
+          <Image
+            src={logo}
+            alt="logo image"
+            width={45}
+            className="pb-2 max-w-full max-h-full overflow-hidden"
+          />
+          <h1 className={isOpen ? "text-2xl font-semibold" : "hidden"}>
+            Tamarind
+          </h1>
+        </div>
+        <button className="transition-all duration-700 hover:rotate-90" onClick={() => setIsOpen(!isOpen)}>
           <Image src={menu} width={40} alt="Menu Icon" />
         </button>
       </div>
-      <div className="bg-[#FFF9F9] h-full py-[18px] px-[15px] rounded-xl mb-[18px]">
+      <form
+        className={
+          isOpen
+            ? "relative flex w-full flex-wrap items-center gap-1 mb-3"
+            : "hidden"
+        }
+      >
+        <button>
+          <Image className="opacity-60" src={search} alt="search button" />
+        </button>
+        <input
+          className="rounded-lg px-2 w-auto flex-1 h-auto bg-transparent focus:outline-none"
+          type="search"
+          placeholder="Search for tasks, notes or lists..."
+          maxLength={50}
+          onChange={(e) => parseSearch(e.target.value)}
+        />
+        {
+          <div
+            className={
+              searchItems?.length != 0
+                ? "absolute top-7 left-0 right-0 border-2 border-[#c0baba] bg-gradient-to-tl from-[#FFF9F9] via-[#e4dede] to-[#F3EDED] transition-opacity duration-300"
+                : "opacity-0 hidden"
+            }
+          >
+            <ul className="flex flex-col gap-1">{searchItems}</ul>
+          </div>
+        }
+      </form>
+      <div
+        className={
+          isOpen
+            ? "flex items-center justify-between"
+            : "flex flex-col items-center gap-3"
+        }
+      >
+        <button
+          className="flex my-2 hover:bg-[#e4dede] hover:scale-110"
+          onClick={() => setSelectedTask("Kanban")}
+        >
+          <Image src={kanban} alt="Kanban view icon" />
+        </button>
+        <button
+          className="flex hover:bg-[#e4dede] transition-all duration-500 hover:rotate-180"
+          onClick={() => setOpenSettingsModal(true)}
+        >
+          <Image src={settings} alt="Settings Button" />
+        </button>
+      </div>
+      <div
+        className={
+          isOpen
+            ? "bg-[#FFF9F9] h-full pt-[18px] px-[15px] mb-5 rounded-xl overflow-y-auto"
+            : "hidden"
+        }
+      >
         <div className="flex flex-col h-full">
           <div className="flex flex-row items-center justify-between">
             <div className="flex items-center content-center gap-[14px]">
@@ -106,7 +286,11 @@ export default function Menu() {
                   setShowSubmenu((prev) => ({ ...prev, tasks: !prev.tasks }))
                 }
               >
-                <Image src={dropdown} width={20} alt="Tasks Dropdown" />
+                <Image
+                  src={showSubmenu.tasks ? dropdown : arrowRight}
+                  width={22}
+                  alt="Tasks Dropdown"
+                />
               </button>
               <h2>Tasks</h2>
             </div>
@@ -114,14 +298,33 @@ export default function Menu() {
               <Image src={add} alt="Add task icon" />
             </button>
           </div>
-          <ul
-            className={
-              showSubmenu.tasks
-                ? "my-2 mx-2 transition duration-150 ease-out"
-                : "hidden"
-            }
-          >
+          <ul className={showSubmenu.tasks ? "my-2 mx-2 w-full" : "hidden"}>
             {parseTasks()}
+          </ul>
+          <hr className="border-1 border-neutral-700 my-[10px]" />
+          <div className="flex flex-row items-center justify-between">
+            <div className="flex items-center content-center gap-[14px]">
+              <button
+                onClick={() =>
+                  setShowSubmenu((prev) => ({
+                    ...prev,
+                    inProgress: !prev.inProgress,
+                  }))
+                }
+              >
+                <Image
+                  src={showSubmenu.inProgress ? dropdown : arrowRight}
+                  width={22}
+                  alt="In progress tasks dropdown"
+                />
+              </button>
+              <h2>In progress</h2>
+            </div>
+          </div>
+          <ul
+            className={showSubmenu.inProgress ? "my-2 mx-2 w-full" : "hidden"}
+          >
+            {parseInProgressTasks()}
           </ul>
           <hr className="border-1 border-neutral-700 my-[10px]" />
           <div className="flex flex-row items-center justify-between">
@@ -134,35 +337,93 @@ export default function Menu() {
                   }))
                 }
               >
-                <Image src={dropdown} width={20} alt="Finished tasks dropdown" />
+                <Image
+                  src={showSubmenu.finishedTasks ? dropdown : arrowRight}
+                  width={22}
+                  alt="Finished tasks dropdown"
+                />
               </button>
               <h2>Finished Tasks</h2>
             </div>
           </div>
           <ul className={showSubmenu.finishedTasks ? "my-2 mx-2" : "hidden"}>
-            {HandleStorageTasks()}
+            {HandleCompletedTasks()}
           </ul>
           <hr className="border-1 border-neutral-700 my-[10px]" />
-          <div className="flex-grow"></div>
-          <div className="flex gap-3">
-            <button className="flex items-center w-full p-1 transition ease-in delay-150 rounded-md hover:bg-[#e4dede]">
-              <Image
-                className="mr-3"
-                src={settings}
-                alt="Settings Button"
-                width={20}
-              />
-              Settings
+          <div className="flex flex-row items-center justify-between">
+            <div className="flex items-center content-center gap-[14px]">
+              <button
+                onClick={() =>
+                  setShowSubmenu((prev) => ({
+                    ...prev,
+                    lists: !prev.lists,
+                  }))
+                }
+              >
+                <Image
+                  src={showSubmenu.lists ? dropdown : arrowRight}
+                  width={22}
+                  alt="Lists dropdown"
+                />
+              </button>
+              <h2>Lists</h2>
+            </div>
+            <button onClick={() => setSelectedTask("List")}>
+              <Image src={add} alt="Add list icon" />
             </button>
           </div>
+          <ul className={showSubmenu.lists ? "my-2 mx-2" : "hidden"}>
+            {parseLists()}
+          </ul>
+          <hr className="border-1 border-neutral-700 my-[10px]" />
+          <div className="flex flex-row items-center justify-between">
+            <div className="flex items-center content-center gap-[14px]">
+              <button
+                onClick={() =>
+                  setShowSubmenu((prev) => ({ ...prev, notes: !prev.notes }))
+                }
+              >
+                <Image
+                  src={showSubmenu.notes ? dropdown : arrowRight}
+                  width={22}
+                  alt="Notes dropdown"
+                />
+              </button>
+              <h2>Notes</h2>
+            </div>
+            <button onClick={() => setSelectedTask("Note")}>
+              <Image src={add} alt="Add Note icon" />
+            </button>
+          </div>
+          <ul className={showSubmenu.notes ? "my-2 mx-2" : "hidden"}>
+            {parseNotes()}
+          </ul>
+          <div className="flex-grow" />
         </div>
       </div>
+      {/* <div className="flex gap-3">
+        <button
+          className="flex items-center w-full p-1 transition ease-in delay-150 rounded-md hover:bg-[#e4dede]"
+          onClick={() => setOpenSettingsModal(true)}
+        >
+          <Image
+            className="mr-3"
+            src={settings}
+            alt="Settings Button"
+            width={22}
+          />
+          Settings
+        </button>
+      </div> */}
       <Modal
         openModal={openModal}
         setOpenModal={setOpenModal}
         action="Add new"
       />
-      {/* <SettingsModal openSettingsModal={openSettingsModal}  setOpenSettingsModal={setOpenSettingsModal} /> */}
+      <SettingsModal
+        openSettingsModal={openSettingsModal}
+        setOpenSettingsModal={setOpenSettingsModal}
+      />
     </div>
   );
 }
