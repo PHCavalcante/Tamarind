@@ -1,85 +1,113 @@
+import GetUserData from "@/utils/GetUserData";
+import { UseTaskContext } from "@/hooks/taskContext";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { useState } from "react";
+import { postList, postNote } from "@/services/fetchData";
+import EmojiPicker from "./EmojiPicker";
+import createdAt from "@/utils/getFormattedDateTime";
+import { listTypes } from "@/types/dataTypes";
 import add from "../../assets/add.svg";
-// import EmojiPicker from "./EmojiPicker";
-import createdAt from "@/utils/GetCurrentTime";
-import dots from "../../assets/dots.svg";
+import pencil from "../../assets/pencil.svg";
+
 
 type TaskMenuBlankProps = {
   action: string;
-}
+};
 
-export default function TaskMenuBlank({action}: TaskMenuBlankProps) {
+export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
   const [counter, setCounter] = useState({
     tasksCounter: 0,
-    subtasksCounter: 0,
+    // subtasksCounter: 0,
   });
   // const [tasks, setTasks] = useState([]);
-  const [isChecked, setIsChecked] = useState<any>({
-    tasks: [],
-    subtasks: []
-  });
+  // const [isChecked, setIsChecked] = useState<any>({
+  //   tasks: [],
+  //   subtasks: [],
+  // });
+  const [isChecked, setIsChecked] = useState(
+    Array(counter.tasksCounter).fill(false)
+  );
   const [showSubmenu, setShowSubmenu] = useState(false);
-  const [showSubtasks, setShowSubtasks] = useState(false);
-  const [showDescription, setShowDescription] = useState(false);
+  // const [showSubtasks, setShowSubtasks] = useState();
+  const [showPicker, setShowPicker] = useState(false);
+  // const [showDescription, setShowDescription] = useState<boolean[]>([]);
+  const [details, setDetails] = useState({
+    userId: "",
+    type: "note",
+    title: "",
+    description: "",
+    createdAt: "",
+  });
+  const emoji = useRef("");
+  const { selectedTask, setSelectedTask } = UseTaskContext();
+  const user = GetUserData();
+  if (user) {
+    details.userId = user.id;
+  }
+
+  const list = useRef<listTypes>({
+    userId: details.userId,
+    type: "list",
+    title: details.title,
+    tasksTitles: [],
+    createdAt: "",
+    tasksCounter: counter.tasksCounter,
+    tasksStatus: isChecked,
+  });
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      e.stopPropagation();
+      if (
+        e.key === "Backspace" &&
+        (e.target as HTMLInputElement).value === ""
+      ) {
+        setCounter((prevCounter) => {
+          const newCounter = prevCounter.tasksCounter - 1;
+          isChecked.splice(newCounter, 1);
+          document.getElementById(`task ${newCounter}`)?.focus();
+          return { ...prevCounter, tasksCounter: newCounter };
+        });
+      } else if (e.key === "Enter") {
+        setCounter((prevCounter) => ({
+          ...prevCounter,
+          tasksCounter: prevCounter.tasksCounter + 1,
+        }));
+        setIsChecked((prevIsChecked) => [...prevIsChecked, false]);
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isChecked]);
+
+  const handleCheckboxChange = (index: number) => {
+    const newIsChecked = [...isChecked];
+    newIsChecked[index] = !newIsChecked[index];
+    setIsChecked(newIsChecked);
+  };
 
   function renderTasks() {
     const items = [];
-    if (counter.tasksCounter == 0) {
-      return;
-    }
-    function taskManagement() {
-      document.onkeydown = function (e: any) {
-        if (e.key == "Backspace" && e.target.value == "") {
-          setCounter({ ...counter, tasksCounter: counter.tasksCounter - 1 });
-          delete isChecked[counter.tasksCounter];
-          const checkbox = document.getElementById(
-            `task ${counter.tasksCounter - 1}`
-          );
-          checkbox!.focus();
-        } else if (e.key == "Enter") {
-          setCounter({ ...counter, tasksCounter: counter.tasksCounter + 1 });
-          isChecked[counter.tasksCounter] = false;
-        }
-      };
-    }
-    for (let i = 0; i < counter.tasksCounter; i++) {
+    if (counter.tasksCounter == 0) return;
+    for (let i = 1; i <= counter.tasksCounter; i++) {
       items.push(
         <li key={i} className="flex items-center gap-2">
           <div className="flex flex-col">
-            <div className="flex">
-              <button onClick={() => setShowSubmenu(!showSubmenu)}>
-                <div className="relative">
-                  <div
-                    className={
-                      showSubmenu
-                        ? "flex flex-col absolute w-max z-10 gap-1 bg-[#dfdbdb] rounded"
-                        : "hidden"
-                    }
-                  >
-                    <button
-                      className="p-2 hover:bg-red-400"
-                      onClick={() => setShowDescription(true)}
-                    >
-                      Add description
-                    </button>
-                    <button
-                      className="p-2 hover:bg-red-400"
-                      onClick={() => setCounter({ ...counter, subtasksCounter: counter.subtasksCounter + 1 })}
-                    >
-                      Add subtask
-                    </button>
-                  </div>
-                </div>
-                <Image src={dots} width={20} alt="Submenu icon" />
-              </button>
+            <div className="flex items-center">
+              {/* <Image
+                onClick={() => setShowSubmenu(!showSubmenu)}
+                src={dots}
+                width={20}
+                alt="Submenu icon"
+                className="cursor-pointer"
+                id={`submenuIcon ${i}`}
+              /> */}
               <input
-                id={`task ${i}`}
                 type="checkbox"
-                checked={isChecked[i]}
-                onChange={() =>
-                  setIsChecked({ ...isChecked, [i]: !isChecked[i] })
-                }
+                checked={isChecked[i - 1]}
+                onChange={() => handleCheckboxChange(i - 1)}
                 className="w-5 h-5 peer mr-2"
               />
               <label
@@ -87,25 +115,30 @@ export default function TaskMenuBlank({action}: TaskMenuBlankProps) {
                 className="peer-checked:line-through peer-checked:decoration-dashed"
               >
                 <input
+                  id={`task ${i}`}
                   type="text"
                   placeholder="Task title"
                   autoFocus
                   autoCapitalize="words"
-                  onInput={taskManagement}
+                  autoComplete="off"
+                  onChange={(e) =>
+                    (list.current.tasksTitles[i - 1] = e.target.value)
+                  }
+                  // onInput={(e: any) => handleKeyDown(e)}
                   className={`${
-                    isChecked[i].value && "line-through decoration-dashed"
+                    isChecked[i - 1] && "line-through decoration-dashed"
                   } bg-transparent focus:outline-none text-xl font-bold w-full`}
                 />
               </label>
             </div>
-            <p className={showDescription ? "mx-10" : "hidden"}>
-              Description:{" "}
+            {/* <p className={showDescription[i] ? "mx-10" : "hidden"}>
+              <span className="opacity-50 font-bold">Description: </span>
               <input
                 type="text"
                 className="bg-transparent focus:outline-none"
               />
-            </p>
-            <ul className={showSubtasks ? "flex items-center mx-10" : "hidden"}>
+            </p> */}
+            {/* <ul className={showSubtasks ? "flex items-center mx-10" : "hidden"}>
               <li className="flex items-center gap-2">
                 <input type="checkbox" className="w-4 h-4 peer" />
                 <label className="peer-checked:line-through peer-checked:decoration-dashed">
@@ -117,7 +150,7 @@ export default function TaskMenuBlank({action}: TaskMenuBlankProps) {
                   />
                 </label>
               </li>
-            </ul>
+            </ul> */}
           </div>
         </li>
       );
@@ -127,22 +160,51 @@ export default function TaskMenuBlank({action}: TaskMenuBlankProps) {
   return (
     <div className="flex flex-col w-full h-full bg-[#F3EDED] py-[14px] px-3 shadow-lg shadow-gray-500/50">
       <div className="flex flex-col w-auto content-center items-center justify-center">
-        <input
-          type="text"
-          placeholder={action == "List" ? "List tittle" : "Note title"}
-          autoFocus
-          autoCapitalize="words"
-          className="flex bg-transparent text-center text-2xl mt-1 font-bold focus:outline-none"
-        />
-        <span className="opacity-50">
-          Created at: <span className="font-bold">{createdAt}</span>
-        </span>{" "}
-        {/* Lembrar de colocar isso apenas quando o usuário salvar */}
-        {/* <EmojiPicker /> */}
+        <div className="flex items-center gap-2">
+          {showPicker && (
+            <EmojiPicker
+              showPicker={showPicker}
+              setShowPicker={setShowPicker}
+              parentEmoji={emoji}
+            />
+          )}
+          <button
+            className="ml-auto"
+            onClick={() => setShowPicker(!showPicker)}
+          >
+            {emoji.current == "" ? (
+              <Image
+                src={pencil}
+                className="opacity-40"
+                alt="Icon picker button"
+              />
+            ) : (
+              <p
+                dangerouslySetInnerHTML={{ __html: emoji.current }}
+                className="text-2xl"
+              ></p>
+            )}
+          </button>
+
+          <input
+            type="text"
+            placeholder={action == "List" ? "List tittle" : "Note title"}
+            autoFocus
+            autoCapitalize="words"
+            onChange={(e) => setDetails({ ...details, title: e.target.value })}
+            maxLength={100}
+            size={details.title.length == 0 ? 6 : details.title.length}
+            className="bg-transparent text-2xl font-bold focus:outline-none"
+          />
+        </div>
+        {selectedTask?.createdAt && (
+          <span className="opacity-50">
+            Created at: <span className="font-bold">{createdAt}</span>
+          </span>
+        )}
       </div>
       {action == "List" && (
         <div className="flex flex-row items-center gap-1 content-center mt-28">
-          {/* <h2 className="text-2xl font-bold mt-5">Tasks</h2> */}
           <button
             className="flex items-center gap-1"
             name="addTask"
@@ -162,7 +224,47 @@ export default function TaskMenuBlank({action}: TaskMenuBlankProps) {
         </div>
       )}
       {action == "List" && (
-        <ul className="flex flex-col gap-2 my-4 mx-5">{renderTasks()}</ul>
+        <ul className="flex flex-col gap-2 my-4 mx-5">
+          {renderTasks()}
+          {/* This is just for have something to click to close the submenu modal */}
+          {showSubmenu && (
+            <div
+              className="w-full h-full absolute bg-transparent top-0 left-0 translate-x-1 translate-y-1 overflow-hidden"
+              onClick={() => setShowSubmenu(false)}
+            />
+          )}
+          {/* <div>
+            <div
+              className={
+                showSubmenu
+                  ? "flex flex-col absolute w-max z-10 bg-[#dfdbdb] rounded border border-black"
+                  : "hidden"
+              }
+            >
+              <button
+                className="p-2 hover:bg-red-400 border border-black"
+                onClick={() => {
+                  // setShowDescription(true);
+                  setShowSubmenu(false);
+                  setShowDescription((prev) => [...prev, true])
+                }}
+              >
+                Add description
+              </button>
+              <button
+                className="p-2 hover:bg-red-400 border border-black"
+                onClick={() =>
+                  setCounter({
+                    ...counter,
+                    subtasksCounter: counter.subtasksCounter + 1,
+                  })
+                }
+              >
+                Add subtask
+              </button>
+            </div>
+          </div> */}
+        </ul>
       )}
       {action == "Note" && (
         <form className="w-full h-full">
@@ -171,12 +273,33 @@ export default function TaskMenuBlank({action}: TaskMenuBlankProps) {
             required
             placeholder="Describe your note..."
             maxLength={1000}
+            onChange={(e) => (details.description = e.target.value)}
             className="w-full h-full text-opacity-15 bg-transparent text-lg focus:outline-none"
           />
         </form>
       )}
       <div>
-        <button className="w-full h-10 bg-[#FF5C5C] text-white font-bold rounded-lg">
+        <button
+          className="w-full h-10 bg-[#FF5C5C] text-white font-bold rounded-lg"
+          onClick={
+            action === "List"
+              ? () => {
+                  list.current.userId = details.userId;
+                  list.current.createdAt = createdAt;
+                  list.current.title = details.title;
+                  list.current.tasksCounter = counter.tasksCounter;
+                  list.current.tasksStatus = isChecked;
+                  postList(list.current);
+                  setSelectedTask(null);
+                }
+              : () => {
+                  const prev = details.title;
+                  details.title = emoji.current + " " + prev;
+                  details.createdAt = createdAt;
+                  postNote(details);
+                }
+          }
+        >
           Save
         </button>
       </div>
