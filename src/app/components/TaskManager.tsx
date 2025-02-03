@@ -8,7 +8,6 @@ import Kanban from "./Kanban";
 
 export default function TaskManager() {
   const { selectedTask } = UseTaskContext();
-  console.log(selectedTask);
   return selectedTask == "List" ? (
     <TaskMenuBlank action="List" />
   ) : selectedTask == "Note" ? (
