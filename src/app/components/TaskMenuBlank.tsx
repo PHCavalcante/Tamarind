@@ -9,7 +9,6 @@ import { listTypes } from "@/types/dataTypes";
 import add from "../../assets/add.svg";
 import pencil from "../../assets/pencil.svg";
 
-
 type TaskMenuBlankProps = {
   action: string;
 };
@@ -24,9 +23,7 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
   //   tasks: [],
   //   subtasks: [],
   // });
-  const [isChecked, setIsChecked] = useState(
-    Array(counter.tasksCounter).fill(false)
-  );
+  const [isChecked, setIsChecked] = useState(Array(counter.tasksCounter).fill(false));
   const [showSubmenu, setShowSubmenu] = useState(false);
   // const [showSubtasks, setShowSubtasks] = useState();
   const [showPicker, setShowPicker] = useState(false);
@@ -44,7 +41,6 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
   if (user) {
     details.userId = user.id;
   }
-
   const list = useRef<listTypes>({
     userId: details.userId,
     type: "list",
@@ -61,6 +57,7 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
       if (
         e.key === "Backspace" &&
         (e.target as HTMLInputElement).value === ""
+        && selectedTask == "List"
       ) {
         setCounter((prevCounter) => {
           const newCounter = prevCounter.tasksCounter - 1;
@@ -124,7 +121,6 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
                   onChange={(e) =>
                     (list.current.tasksTitles[i - 1] = e.target.value)
                   }
-                  // onInput={(e: any) => handleKeyDown(e)}
                   className={`${
                     isChecked[i - 1] && "line-through decoration-dashed"
                   } bg-transparent focus:outline-none text-xl font-bold w-full`}
