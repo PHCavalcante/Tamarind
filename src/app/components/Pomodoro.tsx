@@ -1,6 +1,6 @@
-import taskTypes from "@/types/dataTypes";
+import { taskTypes } from "@/types/dataTypes";
 import { useState, useEffect, Dispatch, SetStateAction } from "react";
-import { markTaskAsCompleted, updateTask } from "@/services/fetchData";
+import { updateTask } from "@/services/fetchData";
 
 type PomodoroProps = {
   minutes: number;
