@@ -1,6 +1,7 @@
 import GetUserData from "@/utils/GetUserData";
 import { UseTaskContext } from "@/hooks/taskContext";
 import { useState, useEffect, useRef } from "react";
+import TextFormatter from "./TextFormatter";
 import Image from "next/image";
 import { postList, postNote } from "@/services/fetchData";
 import EmojiPicker from "./EmojiPicker";
@@ -36,6 +37,7 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
     createdAt: "",
   });
   const emoji = useRef("");
+  const userFormattedTextInput = useRef("");
   const { selectedTask, setSelectedTask } = UseTaskContext();
   const user = GetUserData();
   if (user) {
@@ -181,11 +183,11 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
               ></p>
             )}
           </button>
-
           <input
             type="text"
             placeholder={action == "List" ? "List tittle" : "Note title"}
             autoFocus
+            required
             autoCapitalize="words"
             onChange={(e) => setDetails({ ...details, title: e.target.value })}
             maxLength={100}
@@ -263,16 +265,7 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
         </ul>
       )}
       {action == "Note" && (
-        <form className="w-full h-full">
-          <textarea
-            id="note"
-            required
-            placeholder="Describe your note..."
-            maxLength={1000}
-            onChange={(e) => (details.description = e.target.value)}
-            className="w-full h-full text-opacity-15 bg-transparent text-lg focus:outline-none"
-          />
-        </form>
+        <TextFormatter readOnly={false} text={""} inputText={userFormattedTextInput} />
       )}
       <div>
         <button
@@ -292,6 +285,7 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
                   const prev = details.title;
                   details.title = emoji.current + " " + prev;
                   details.createdAt = createdAt;
+                  details.description = userFormattedTextInput.current;
                   postNote(details);
                 }
           }
