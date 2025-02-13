@@ -1,22 +1,38 @@
 "use client";
 
-import useStore from "@/services/store";
-import { useEffect, useRef } from "react";
+// import useStore from "@/services/store";
+import { useEffect, useRef, useState } from "react";
 import GetUserData from "@/utils/GetUserData";
 import { UseTaskContext } from "@/hooks/taskContext";
 import { taskTypes } from "@/types/dataTypes";
 import { updateTask } from "@/services/fetchData";
+import axios from "axios";
 
 export default function Kanban() {
-  const { tasksData, fetchData } = useStore();
+  // const { tasksData, fetchData } = useStore();
+  const [tasksData, setTasksData] = useState<taskTypes[]>([]);
   const { setSelectedTask } = UseTaskContext();
   const taskGrabed = useRef<taskTypes>(null);
   const user = GetUserData();
 
+  // useEffect(() => {
+  //   if (!user) return;
+  //   fetchData(user);
+  // }, [user]);
   useEffect(() => {
-    if (!user) return;
-    fetchData(user);
-  }, [user]);
+    if(!user) return;
+    const fetchData = async () => {
+      try{
+        const response = await axios.get(`http://localhost:3000/tasks/${user.id}`);
+        const data = response.data;
+        setTasksData(data);
+      }
+      catch (error){
+        console.log(error);
+      }
+    }
+    fetchData();
+  },[user])
 
   function drag(ev:DragEvent) {
     ev.dataTransfer?.setData("text", ev.target!.id);
