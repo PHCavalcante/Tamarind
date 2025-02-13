@@ -1,6 +1,6 @@
 export type taskTypes = {
     _id?: string;
-    type?: string;
+    type: string;
     title: string;
     description: string;
     scheduleDate?: string;
