@@ -62,7 +62,7 @@ export default function Menu() {
       }
     };
     fetchTasks();
-  }, [user]);
+  }, [user, data, lists, notes]);
 
   const parseTasks = () => {
     const notCompletedTasks = data.filter((task:taskTypes) => task.isCompleted == false && task.inProgress == false);
