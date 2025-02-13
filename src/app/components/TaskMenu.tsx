@@ -6,8 +6,9 @@ import Modal from "./Modal";
 import { useState, useRef, useEffect } from "react";
 import timer from "../../assets/timer.svg";
 import Pomodoro from "./Pomodoro";
-import { updateList, updateTask } from "@/services/fetchData";
+import { updateList, updateTask, updateNote } from "@/services/fetchData";
 import inProgress from "../../assets/inProgress.svg"
+import TextFormatter from "./TextFormatter";
 
 export default function TaskMenu() {
   const { selectedTask } = UseTaskContext();
@@ -16,6 +17,8 @@ export default function TaskMenu() {
   const [tasksStates, setTasksStates] = useState<boolean[]>(selectedTask?.tasksStatus || []);
   const [action, setAction] = useState("");
   const checkboxValue = useRef(false);
+  const [editorReadOnly, setEditorReadOnly] = useState(true);
+  const userFormattedTextInput = useRef("");
 
   useEffect(() => {
     if (!selectedTask?.tasksStatus) return;
@@ -23,7 +26,7 @@ export default function TaskMenu() {
   },[selectedTask]);
 
   if (!selectedTask) return null;
-  console.log(`tasksStates value: ${tasksStates}`);
+
   const handleCheckboxChange = (index: number) => {
     const newIsChecked = [...tasksStates];
     newIsChecked[index] = !newIsChecked[index];
@@ -70,7 +73,7 @@ export default function TaskMenu() {
     // porque notes não possuem scheduleDate
     if (selectedTask && !selectedTask.isCompleted) {
       return (
-        <div className="absolute bottom-8">
+        <div className="w-full absolute bottom-8">
           <div className="flex flex-row items-center">
             {selectedTask.type == "task" && !selectedTask.inProgress && (
               <button
@@ -108,36 +111,42 @@ export default function TaskMenu() {
             {selectedTask.type == "task" && (
               <label htmlFor="checkbox">Mark as done</label>
             )}
-            {(selectedTask.type == "task" || selectedTask.type == "note") && (
+            {["task", "note"].includes(selectedTask.type) && editorReadOnly && (
               <button
-                onClick={() => {
-                  setOpenModal(true);
-                  setAction("Edit");
-                }}
+                onClick={
+                  selectedTask.type == "task"
+                    ? () => {
+                        setOpenModal(true);
+                        setAction("Edit");
+                      }
+                    : () =>
+                        selectedTask.type == "note"
+                          ? setEditorReadOnly(false)
+                          : null
+                }
                 className="flex items-center hover:scale-105"
               >
                 <Image src={edit} className="mr-1 ml-4" alt="Edit Task" />
                 Edit {selectedTask.type}
               </button>
             )}
-            {(selectedTask.type == "task" ||
-              selectedTask.type == "note" ||
-              selectedTask.type == "list") && (
-              <button
-                onClick={() => {
-                  setOpenModal(true);
-                  setAction("Delete");
-                }}
-                className="flex items-center hover:scale-105"
-              >
-                <Image
-                  src={deleteIcon}
-                  className="mr-3 ml-4"
-                  alt="Delete Task Button"
-                />
-                Delete {selectedTask.type}
-              </button>
-            )}
+            {["task", "note", "list"].includes(selectedTask.type) &&
+              editorReadOnly && (
+                <button
+                  onClick={() => {
+                    setOpenModal(true);
+                    setAction("Delete");
+                  }}
+                  className="flex items-center hover:scale-105"
+                >
+                  <Image
+                    src={deleteIcon}
+                    className="mr-3 ml-4"
+                    alt="Delete Task Button"
+                  />
+                  Delete {selectedTask.type}
+                </button>
+              )}
             {selectedTask.type == "task" && (
               <button
                 className="flex items-center hover:scale-105"
@@ -150,6 +159,9 @@ export default function TaskMenu() {
                 />
                 Start pomodoro
               </button>
+            )}
+            {!editorReadOnly && (
+              <button className="w-full h-10 bg-[#FF5C5C] text-white font-bold rounded-lg" onClick={() => {selectedTask.description = userFormattedTextInput.current; updateNote(selectedTask)}}>Save changes</button>
             )}
           </div>
         </div>
@@ -177,7 +189,7 @@ export default function TaskMenu() {
       <div
         className={
           selectedTask.type != "note"
-            ? "flex items-center gap-[23px]"
+            ? "flex items-center justify-between gap-[23px]"
             : "flex flex-col items-center"
         }
       >
@@ -188,30 +200,50 @@ export default function TaskMenu() {
               : "font-bold text-2xl"
           }
           dangerouslySetInnerHTML={{ __html: selectedTask.title }}
-        >
-        </h2>
-        {selectedTask.createdAt && (
-          <span>
-            Created at:{" "}
-            <span className="font-bold">{selectedTask.createdAt}</span>
-          </span>
-        )}
-        {selectedTask.scheduleDate && (
-          <p>
-            Scheduled To:{" "}
-            {selectedTask.scheduleDate ? (
-              <b>{selectedTask.scheduleDate}</b>
-            ) : (
-              <b>Not scheduled</b>
-            )}
-          </p>
-        )}
+        ></h2>
+        <div className="flex gap-3">
+          {selectedTask.createdAt && (
+            <span>
+              Created at:{" "}
+              <span className="font-bold">{selectedTask.createdAt}</span>
+            </span>
+          )}
+          {selectedTask.scheduleDate && (
+            <p>
+              Scheduled To:{" "}
+              {selectedTask.scheduleDate ? (
+                <b>{selectedTask.scheduleDate}</b>
+              ) : (
+                <b>Not scheduled</b>
+              )}
+            </p>
+          )}
+        </div>
       </div>
-      <h3 className="mt-[25px] font-semibold">{selectedTask.description}</h3>
-      {selectedTask.type == "list" && selectedTask.tasksStatus && <ul className="flex flex-col gap-2 my-4 mx-5">{handleLists()}</ul>}
+      {selectedTask.type == "note" ? (
+        <div className="w-full h-auto">
+          <TextFormatter
+            inputText={userFormattedTextInput}
+            text={selectedTask.description}
+            readOnly={editorReadOnly}
+          />
+        </div>
+      ) : (
+        <textarea
+          name="description"
+          value={selectedTask.description}
+          className="w-full h-full bg-transparent mt-6 focus:outline-none"
+          readOnly
+        />
+      )}
+      {selectedTask.type == "list" && selectedTask.tasksStatus && (
+        <ul className="flex flex-col gap-2 my-4 mx-5">{handleLists()}</ul>
+      )}
       {selectedTask.type == "list" && (
         <div className="flex items-center gap-1 mx-4">
-          <label className="italic opacity-50">{calculateCompletedListPercentage()}%</label>
+          <label className="italic opacity-50">
+            {calculateCompletedListPercentage()}%
+          </label>
           <div
             className="flex w-24 h-2 bg-gray-200 rounded-full overflow-hidden dark:bg-gray-300"
             role="progressbar"
