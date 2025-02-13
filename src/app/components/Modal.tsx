@@ -70,7 +70,7 @@ export default function Modal({
           </p>
           <div className="flex justify-between mt-3 w-full">
             <button
-              className="text-black w-24 py-2 px-2 rounded-lg mx-auto border-2 font-bold border-black hover:scale-105"
+              className="text-black w-24 py-2 px-2 rounded-lg mx-auto font-bold hover:scale-105"
               onClick={() => {
                 checkboxValue!.current = false;
                 setOpenModal(false);
@@ -177,7 +177,7 @@ export default function Modal({
           </div>
           <div className="flex justify-between mt-3 w-[50%] mx-auto">
             <button
-              className="text-black font-bold max-w-fit py-2 px-2 rounded-lg mx-auto border-2 border-black hover:scale-105"
+              className="text-[#FF5C5C] font-bold max-w-fit py-2 px-2 rounded-lg mx-auto hover:bg-[#FF5C5C22]"
               onClick={() => setOpenModal(false)}
             >
               Cancel
@@ -192,7 +192,7 @@ export default function Modal({
                   ? updateNote(formValues.current)
                   : null
               }
-              className="bg-[#FF5C5C] font-bold text-[#fff] max-w-fit py-2 px-2 rounded-lg mx-auto hover:scale-105"
+              className="bg-[#201335bb] font-bold text-[#fff] max-w-fit py-2 px-2 rounded-lg mx-auto hover:bg-[#201335dd]"
             >
               {action} {selectedTask?.type == "note" ? "note" : "task"}
             </button>
@@ -221,7 +221,7 @@ export default function Modal({
               : selectedTask?.type == "task"
               ? "task"
               : selectedTask?.type == "list"
-                ? "lsit"
+                ? "list"
               : "task"}
           </h2>
         </div>
