@@ -220,21 +220,22 @@ export default function TaskMenu() {
           )}
         </div>
       </div>
-      {selectedTask.type == "note" ? (
-        <div className="w-full h-auto">
-          <TextFormatter
-            inputText={userFormattedTextInput}
-            text={selectedTask.description}
-            readOnly={editorReadOnly}
-          />
+      {selectedTask.type == "note" && (
+        <div>
+          <div className="w-full h-auto">
+            <TextFormatter
+              inputText={userFormattedTextInput}
+              text={selectedTask.description}
+              readOnly={editorReadOnly}
+            />
+          </div>
+          {/* <textarea
+            name="description"
+            value={selectedTask.description}
+            className="w-full h-full bg-transparent mt-6 focus:outline-none"
+            readOnly
+          /> */}
         </div>
-      ) : (
-        <textarea
-          name="description"
-          value={selectedTask.description}
-          className="w-full h-full bg-transparent mt-6 focus:outline-none"
-          readOnly
-        />
       )}
       {selectedTask.type == "list" && selectedTask.tasksStatus && (
         <ul className="flex flex-col gap-2 my-4 mx-5">{handleLists()}</ul>
