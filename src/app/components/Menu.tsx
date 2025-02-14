@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import menu from "../../assets/menu.svg";
-import { useState, useEffect, JSX } from "react";
+import { useState, useEffect, useRef, JSX } from "react";
 import add from "../../assets/add.svg";
 import dropdown from "../../assets/dropdown.svg";
 import settings from "../../assets/settings.svg";
@@ -24,6 +24,9 @@ export default function Menu() {
   const [data, setData] = useState([]);
   const [notes, setNotes] = useState([]);
   const [lists, setLists] = useState([]);
+  const [searchItems, setSearchItems] = useState<JSX.Element[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const inputSearchValue = useRef("");
   // const [action, setAction] = useState("");
   const { setSelectedTask } = UseTaskContext();
   const user = GetUserData();
@@ -167,10 +170,9 @@ export default function Menu() {
     });
   };
 
-  const [searchItems, setSearchItems] = useState<JSX.Element[]>([]);
-
   function parseSearch(value:string){
     if (value == "") {setSearchItems([]); return;}
+    setIsLoading(true);
     const allData = data.concat(notes).concat(lists);
     const searchData = allData.filter((item: combination) =>
       item.title.startsWith(value)
@@ -190,6 +192,7 @@ export default function Menu() {
     );
       // console.log(searchData);
       setSearchItems(searchData);
+      setIsLoading(false);
   }
 
   return (
@@ -235,21 +238,21 @@ export default function Menu() {
         <input
           className="rounded-lg px-2 w-auto flex-1 h-auto bg-transparent focus:outline-none"
           type="search"
+          value={inputSearchValue.current}
           placeholder="Search for tasks, notes or lists..."
           maxLength={50}
-          onChange={(e) => parseSearch(e.target.value)}
+          onChange={(e) => {inputSearchValue.current = e.target.value; parseSearch(e.target.value)}}
         />
-        {
-          <div
-            className={
-              searchItems?.length != 0
-                ? "absolute top-7 left-0 right-0 border-2 border-[#c0baba] bg-gradient-to-tl from-[#FFF9F9] via-[#e4dede] to-[#F3EDED] transition-opacity duration-300"
+        <div
+          className={
+            inputSearchValue.current != ""
+              ? "absolute flex flex-col h-auto min-h-7 top-7 left-0 right-0 border-2 border-[#c0baba] bg-gradient-to-tl from-[#FFF9F9] via-[#e4dede] to-[#F3EDED] transition-opacity duration-300 animate-modal "
                 : "opacity-0 hidden"
             }
           >
-            <ul className="flex flex-col gap-1">{searchItems}</ul>
-          </div>
-        }
+          {searchItems.length == 0 && <div className="border-8 border-solid border-t-8 mx-auto border-t-[#000000] rounded-full w-10 h-10 animate-spin"/>}
+          <ul className="flex flex-col gap-1">{searchItems}</ul>
+        </div>
       </form>
       <div
         className={
