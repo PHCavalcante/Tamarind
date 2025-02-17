@@ -28,6 +28,7 @@ export default function Modal({
   const user = GetUserData();
   const { selectedTask, setSelectedTask } = UseTaskContext();
   const [value, setValue] = useState(false);
+  const [descriptionLenght, setDescriptionLenght] = useState(0);
   const formValues = useRef({
     _id: selectedTask?._id,
     title: "",
@@ -140,8 +141,9 @@ export default function Modal({
                 ? `New ${selectedTask?.type} description`
                 : "Task description"
             }
-            onChange={(e) => (formValues.current.description = e.target.value)}
+            onChange={(e) => {formValues.current.description = e.target.value; setDescriptionLenght(e.target.value.length)}}
           />
+          <span className="self-end">{descriptionLenght}/500</span>
           <div className="flex items-center justify-between max-w-[70%]">
             {action == "Add new" && (
               <div className="flex items-center gap-2">
