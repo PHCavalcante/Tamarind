@@ -95,7 +95,9 @@ export default function Kanban() {
                     description: task.description,
                     createdAt: task.createdAt,
                     isCompleted: task.isCompleted,
-                    inProgress: task.inProgress
+                    inProgress: task.inProgress,
+                    type: task.type,
+                    scheduleDate: task.scheduleDate,
                   };
                   return (
                     <li
@@ -134,6 +136,8 @@ export default function Kanban() {
                     title: task.title,
                     description: task.description,
                     createdAt: task.createdAt,
+                    type: task.type,
+                    scheduleDate: task.scheduleDate,
                   };
                   return (
                     <li
@@ -175,6 +179,8 @@ export default function Kanban() {
                     title: task.title,
                     description: task.description,
                     createdAt: task.createdAt,
+                    type: task.type,
+                    scheduleDate: task.scheduleDate
                   };
                   return (
                     <li
