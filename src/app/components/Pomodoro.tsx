@@ -36,8 +36,8 @@ export default function Pomodoro({
     <div
       className={
         openModal
-          ? `w-full h-full block content-center fixed z-10 left-0 top-0 ${
-              start ? "bg-[rgba(0,0,0,0.4)]" : "bg-[rgba(0,0,0,0.4)]"
+          ? `w-full h-full block content-center fixed z-10 left-0 top-0 transition-all ease-in 10s bg-[rgba(0,0,0,0.4)] ${
+              start && "bg-[rgba(0,0,0,0.7)]"
             } backdrop-blur-sm transition-all duration-300`
           : "hidden"
       }
@@ -49,13 +49,27 @@ export default function Pomodoro({
           </span>
         </div>
         <div className="flex gap-4">
-          <button
-            className="bg-white p-2 rounded-lg border-4 border-slate-950"
-            onClick={() => setStart(true)}
-          >
-            START
-          </button>
-          <button className="bg-gray-300 p-2 rounded-lg" onClick={() => {content.isCompleted = true; console.log(content); updateTask(content); setOpenModal(false)}}>FINISHED</button>
+          {!start && (
+            <button
+              className="bg-white p-2 rounded-lg border-4 border-slate-950"
+              onClick={() => setStart(true)}
+            >
+              START
+            </button>
+          )}
+          {start && (
+            <button
+              className="bg-gray-300 p-2 rounded-lg font-bold"
+              onClick={() => {
+                content.isCompleted = true;
+                console.log(content);
+                updateTask(content);
+                setOpenModal(false);
+              }}
+            >
+              MARK AS FINISHED
+            </button>
+          )}
         </div>
         {content.type == "task" && (
           <div className="flex items-center gap-2">
@@ -63,7 +77,6 @@ export default function Pomodoro({
               name="checkbox"
               type="checkbox"
               className="w-[30px] h-[30px]"
-              
             />
             <label
               htmlFor="checkbox"
@@ -74,7 +87,7 @@ export default function Pomodoro({
           </div>
         )}
         <button
-          className="text-white font-bold"
+          className="text-[#FF5C5C] font-bold"
           onClick={() => {
             setStart(false);
             setTime(25 * 60);
