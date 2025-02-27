@@ -4,7 +4,6 @@ import menu from "../../assets/menu.svg";
 import { useState, useEffect, useRef, JSX } from "react";
 import add from "../../assets/add.svg";
 import dropdown from "../../assets/dropdown.svg";
-import settings from "../../assets/settings.svg";
 import Modal from "./Modal";
 import SettingsModal from "./SettingsModal";
 import axios from "axios";
