@@ -262,12 +262,12 @@ export default function Menu() {
         >
           <Image src={kanban} alt="Kanban view icon" />
         </button>
-        <button
+        {/* <button
           className="flex hover:bg-[#e4dede] transition-all duration-500 hover:rotate-180"
           onClick={() => setOpenSettingsModal(true)}
         >
           <Image src={settings} alt="Settings Button" />
-        </button>
+        </button> */}
       </div>
       <div
         className={
