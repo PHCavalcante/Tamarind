@@ -1,7 +1,7 @@
 "use client";
 
 // import useStore from "@/services/store";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, DragEvent } from "react";
 import GetUserData from "@/utils/GetUserData";
 import { UseTaskContext } from "@/hooks/taskContext";
 import { taskTypes } from "@/types/dataTypes";
@@ -35,11 +35,11 @@ export default function Kanban() {
   },[user])
 
   function drag(ev:DragEvent) {
-    ev.dataTransfer?.setData("text", ev.target!.id);
-    console.log(`elemento arrastado: ${ev.currentTarget!.id}`);
+    ev.dataTransfer?.setData("text", (ev.target as HTMLElement).id);
+    // console.log(`elemento arrastado: ${(ev.currentTarget! as HTMLElement).id}`);
   }
 
-  function drop(ev: DragEvent<HTMLDivElement>) {
+  function drop(ev: DragEvent<HTMLElement>) {
     ev.preventDefault();
     const target = ev.currentTarget;
     console.log(`alvo do drop: ${target.id}`);
@@ -69,12 +69,53 @@ export default function Kanban() {
         taskGrabed.current!.isCompleted = true;
         console.log(taskGrabed);
         updateTask(taskGrabed.current!);
-    } else return null;
+    } else return;
   }
+
+  function parseData(taskStatus: "todo" | "inProgress" | "done") {
+    return (tasksData &&
+      tasksData
+        .filter(
+          (task: taskTypes) =>
+            taskStatus == "todo" ?
+            task.isCompleted == false && task.inProgress == false
+            : taskStatus == "inProgress" ?
+            task.inProgress == true
+            : task.isCompleted == true 
+        )
+        .map((task: taskTypes) => {
+          const processedTask = {
+            _id: task._id,
+            title: task.title,
+            description: task.description,
+            createdAt: task.createdAt,
+            isCompleted: task.isCompleted,
+            inProgress: task.inProgress,
+            type: task.type,
+            scheduleDate: task.scheduleDate,
+          };
+          return (
+            <li
+              id={processedTask._id}
+              className="w-full bg-[#e4dede] rounded p-2 cursor-pointer shadow-md hover:bg-[#d3cdcd]"
+              key={processedTask._id}
+              onClick={() => setSelectedTask(processedTask)}
+              draggable
+              onDragStart={(event) => {
+                drag(event);
+                taskGrabed.current = processedTask;
+              }}
+            >
+              <span className="font-semibold">{processedTask.title}</span>
+            </li>
+          );
+        }));
+  }
+
   return (
     <div className="flex flex-col w-full h-full bg-[#F3EDED] py-[14px] px-3 shadow-lg shadow-gray-500/50 rounded-2xl">
       <div className="h-full flex justify-evenly gap-6">
-        <div className="flex flex-col bg-[#FFF9F9] w-full h-full rounded-2xl items-center shadow-lg">
+        <div className="flex flex-col bg-[#FFF9F9] w-full h-full rounded-2xl items-center shadow-lg border-2 border-solid border-gray-300">
           <h2 className="font-bold text-xl mt-1">Todo</h2>
           <ul
             className="flex flex-col w-full h-full gap-4 p-3"
@@ -82,41 +123,10 @@ export default function Kanban() {
             onDragOver={(event) => event.preventDefault()}
             id="todo"
           >
-            {tasksData &&
-              tasksData
-                .filter(
-                  (task: taskTypes) =>
-                    task.isCompleted == false && task.inProgress == false
-                )
-                .map((task: taskTypes) => {
-                  const processedTask = {
-                    _id: task._id,
-                    title: task.title,
-                    description: task.description,
-                    createdAt: task.createdAt,
-                    isCompleted: task.isCompleted,
-                    inProgress: task.inProgress,
-                    type: task.type,
-                    scheduleDate: task.scheduleDate,
-                  };
-                  return (
-                    <li
-                      id={processedTask._id}
-                      className="w-full bg-[#e4dede] rounded p-2 cursor-pointer shadow-md hover:bg-[#d3cdcd]"
-                      key={processedTask._id}
-                      onClick={() => setSelectedTask(processedTask)}
-                      draggable
-                      onDragStart={(event) => {drag(event);  taskGrabed.current = processedTask;}}
-                    >
-                      <span className="font-semibold">
-                        {processedTask.title}
-                      </span>
-                    </li>
-                  );
-                })}
+           {parseData("todo")}
           </ul>
         </div>
-        <div className="flex flex-col bg-[#FFF9F9] w-full h-full rounded-2xl items-center shadow-lg">
+        <div className="flex flex-col bg-[#FFF9F9] w-full h-full rounded-2xl items-center shadow-lg border-2 border-solid border-gray-300">
           <h2 className="font-bold text-xl mt-1">In progress</h2>
           <ul
             className="flex flex-col w-full h-full gap-4 p-3"
@@ -124,42 +134,10 @@ export default function Kanban() {
             onDragOver={(event) => event.preventDefault()}
             id="inProgress"
           >
-            {tasksData &&
-              tasksData
-                .filter(
-                  (task: taskTypes) =>
-                    task.inProgress == true
-                )
-                .map((task: taskTypes) => {
-                  const processedTask = {
-                    _id: task._id,
-                    title: task.title,
-                    description: task.description,
-                    createdAt: task.createdAt,
-                    type: task.type,
-                    scheduleDate: task.scheduleDate,
-                  };
-                  return (
-                    <li
-                      id={processedTask._id}
-                      className="w-full bg-[#e4dede] rounded p-2 cursor-pointer shadow-md hover:bg-[#d3cdcd]"
-                      key={processedTask._id}
-                      onClick={() => setSelectedTask(processedTask)}
-                      draggable
-                      onDragStart={(event) => {
-                        drag(event);
-                        taskGrabed.current = processedTask;
-                      }}
-                    >
-                      <span className="font-semibold">
-                        {processedTask.title}
-                      </span>
-                    </li>
-                  );
-                })}
+            {parseData("inProgress")}
           </ul>
         </div>
-        <div className="flex flex-col bg-[#FFF9F9] w-full h-full rounded-2xl items-center shadow-lg">
+        <div className="flex flex-col bg-[#FFF9F9] w-full h-full rounded-2xl items-center shadow-lg border-2 border-solid border-gray-300">
           <h2 className="font-bold text-xl mt-1">Done</h2>
           <ul
             className="flex flex-col w-full h-full gap-4 p-3"
@@ -167,39 +145,7 @@ export default function Kanban() {
             onDragOver={(event) => event.preventDefault()}
             id="done"
           >
-            {tasksData &&
-              tasksData
-                .filter(
-                  (task: taskTypes) =>
-                    task.isCompleted == true
-                )
-                .map((task: taskTypes) => {
-                  const processedTask = {
-                    _id: task._id,
-                    title: task.title,
-                    description: task.description,
-                    createdAt: task.createdAt,
-                    type: task.type,
-                    scheduleDate: task.scheduleDate
-                  };
-                  return (
-                    <li
-                      id={processedTask._id}
-                      className="w-full bg-[#e4dede] rounded p-2 cursor-pointer shadow-md hover:bg-[#d3cdcd]"
-                      key={processedTask._id}
-                      onClick={() => setSelectedTask(processedTask)}
-                      draggable
-                      onDragStart={(event) => {
-                        drag(event);
-                        taskGrabed.current = processedTask;
-                      }}
-                    >
-                      <span className="font-semibold">
-                        {processedTask.title}
-                      </span>
-                    </li>
-                  );
-                })}
+            {parseData("done")}
           </ul>
         </div>
       </div>
