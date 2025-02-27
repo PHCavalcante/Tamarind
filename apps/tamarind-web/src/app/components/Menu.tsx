@@ -25,9 +25,7 @@ export default function Menu() {
   const [notes, setNotes] = useState([]);
   const [lists, setLists] = useState([]);
   const [searchItems, setSearchItems] = useState<JSX.Element[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const inputSearchValue = useRef("");
-  // const [action, setAction] = useState("");
   const { setSelectedTask } = UseTaskContext();
   const user = GetUserData();
   const [showSubmenu, setShowSubmenu] = useState({
@@ -117,7 +115,6 @@ export default function Menu() {
     if (notes.length == 0) return "No notes created yet";
 
     return notes.map((note: noteTypes) => {
-      // note with taskTypes is just for type checking and to not display errors by missing type or neither using any
       return (
         <li
           key={note._id}
@@ -172,7 +169,6 @@ export default function Menu() {
 
   function parseSearch(value:string){
     if (value == "") {setSearchItems([]); return;}
-    setIsLoading(true);
     const allData = data.concat(notes).concat(lists);
     const searchData = allData.filter((item: combination) =>
       item.title.startsWith(value)
@@ -192,7 +188,6 @@ export default function Menu() {
     );
       // console.log(searchData);
       setSearchItems(searchData);
-      setIsLoading(false);
   }
 
   return (
@@ -404,20 +399,6 @@ export default function Menu() {
           <div className="flex-grow" />
         </div>
       </div>
-      {/* <div className="flex gap-3">
-        <button
-          className="flex items-center w-full p-1 transition ease-in delay-150 rounded-md hover:bg-[#e4dede]"
-          onClick={() => setOpenSettingsModal(true)}
-        >
-          <Image
-            className="mr-3"
-            src={settings}
-            alt="Settings Button"
-            width={22}
-          />
-          Settings
-        </button>
-      </div> */}
       <Modal
         openModal={openModal}
         setOpenModal={setOpenModal}
