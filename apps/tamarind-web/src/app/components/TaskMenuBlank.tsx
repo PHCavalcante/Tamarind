@@ -59,7 +59,7 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
       if (
         e.key === "Backspace" &&
         (e.target as HTMLInputElement).value === ""
-        && selectedTask == "List"
+        && typeof selectedTask == "string" && selectedTask == "List"
       ) {
         setCounter((prevCounter) => {
           const newCounter = prevCounter.tasksCounter - 1;
@@ -79,7 +79,7 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isChecked]);
+  }, [isChecked, selectedTask]);
 
   const handleCheckboxChange = (index: number) => {
     const newIsChecked = [...isChecked];
