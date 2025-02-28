@@ -32,7 +32,13 @@ const toolbarPlugin = createToolbarPlugin();
 const { Toolbar } = toolbarPlugin;
 const plugins = [toolbarPlugin];
 
-export default class CustomToolbarEditor extends Component<TextFormatterProps> {
+type TextFormatterState = {
+  editorState: EditorState;
+};
+
+export default class CustomToolbarEditor extends Component<TextFormatterProps, TextFormatterState> {
+  private editor: Editor | null = null;
+
   constructor(props: TextFormatterProps) {
     super(props);
     this.state = {
@@ -67,7 +73,7 @@ export default class CustomToolbarEditor extends Component<TextFormatterProps> {
   };
 
   focus = () => {
-    this.editor.focus();
+    this.editor?.focus();
   };
 
   handleBlockType = (blockType: string) => {
