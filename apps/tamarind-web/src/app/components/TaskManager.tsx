@@ -8,13 +8,13 @@ import Kanban from "./Kanban";
 
 export default function TaskManager() {
   const { selectedTask } = UseTaskContext();
-  return selectedTask == "List" ? (
+  return typeof selectedTask === "string" && selectedTask === "List" ? (
     <TaskMenuBlank action="List" />
-  ) : selectedTask == "Note" ? (
+  ) : typeof selectedTask === "string" && selectedTask == "Note" ? (
     <TaskMenuBlank action="Note" />
-  ) : selectedTask == "Kanban" ? (
+  ) : typeof selectedTask == "string" && selectedTask == "Kanban" ? (
     <Kanban />
-  ) : selectedTask ? (
+  ) : selectedTask !== null ? (
     <TaskMenu />
   ) : (
     <DefaultTaskMenu />
