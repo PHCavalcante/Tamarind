@@ -5,18 +5,32 @@ import TaskMenu from "./TaskMenu";
 import DefaultTaskMenu from "./DefaultTaskMenu";
 import TaskMenuBlank from "./TaskMenuBlank";
 import Kanban from "./Kanban";
+import { ViewType } from "@/types/dataTypes";
 
 export default function TaskManager() {
   const { selectedTask } = UseTaskContext();
-  return typeof selectedTask === "string" && selectedTask === "List" ? (
-    <TaskMenuBlank action="List" />
-  ) : typeof selectedTask === "string" && selectedTask == "Note" ? (
-    <TaskMenuBlank action="Note" />
-  ) : typeof selectedTask == "string" && selectedTask == "Kanban" ? (
-    <Kanban />
-  ) : selectedTask !== null ? (
-    <TaskMenu />
-  ) : (
-    <DefaultTaskMenu />
-  );
+
+  if (!selectedTask) return <DefaultTaskMenu />;
+
+  if (typeof selectedTask === "string") {
+    switch (selectedTask as ViewType) {
+      case "List":
+        return <TaskMenuBlank action="List" />;
+      case "Note":
+        return <TaskMenuBlank action="Note" />;
+      case "Kanban":
+        return <Kanban />;
+      default:
+        return <DefaultTaskMenu />;
+    }
+  }
+
+  if (
+    typeof selectedTask === "object" &&
+    ("title" in selectedTask || "description" in selectedTask)
+  ) {
+    return <TaskMenu />;
+  }
+
+  return <DefaultTaskMenu />;
 }

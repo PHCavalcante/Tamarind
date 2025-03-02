@@ -6,7 +6,7 @@ import Image from "next/image";
 import { postList, postNote } from "@/services/fetchData";
 import EmojiPicker from "./EmojiPicker";
 import createdAt from "@/utils/getFormattedDateTime";
-import { listTypes } from "@/types/dataTypes";
+import { listTypes, taskTypes } from "@/types/dataTypes";
 import add from "../../assets/add.svg";
 import pencil from "../../assets/pencil.svg";
 
@@ -80,6 +80,9 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isChecked, selectedTask]);
+
+  const isTask = (task: unknown): task is taskTypes =>
+      typeof task === "object" && task !== null && "title" in task;
 
   const handleCheckboxChange = (index: number) => {
     const newIsChecked = [...isChecked];
@@ -195,7 +198,7 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
             className="bg-transparent text-2xl font-bold focus:outline-none"
           />
         </div>
-        {selectedTask?.createdAt && (
+        {isTask(selectedTask) && selectedTask?.createdAt && (
           <span className="opacity-50">
             Created at: <span className="font-bold">{createdAt}</span>
           </span>
