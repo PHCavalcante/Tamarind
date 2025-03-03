@@ -9,20 +9,24 @@ import Pomodoro from "./Pomodoro";
 import { updateList, updateTask, updateNote } from "@/services/fetchData";
 import inProgress from "../../assets/inProgress.svg"
 import TextFormatter from "./TextFormatter";
+import { isTask, isNote, isList } from "@/utils/dataCheck";
+import { taskTypes } from "@/types/dataTypes";
 
 export default function TaskMenu() {
   const { selectedTask } = UseTaskContext();
   const [openModal, setOpenModal] = useState(false);
   const [openPomodoro, setOpenPomodoro] = useState(false);
-  const [tasksStates, setTasksStates] = useState<boolean[]>(selectedTask?.tasksStatus || []);
+  const [tasksStates, setTasksStates] = useState<boolean[]>(isList(selectedTask) && selectedTask?.tasksStatus || []);
   const [action, setAction] = useState("");
   const checkboxValue = useRef(false);
   const [editorReadOnly, setEditorReadOnly] = useState(true);
   const userFormattedTextInput = useRef("");
 
+  console.log(isList(selectedTask));
+
   useEffect(() => {
-    if (!selectedTask?.tasksStatus) return;
-    setTasksStates(selectedTask?.tasksStatus);
+    if (isList(selectedTask) && !selectedTask?.tasksStatus) return;
+    if (isList(selectedTask)) setTasksStates(selectedTask.tasksStatus);
   },[selectedTask]);
 
   if (!selectedTask) return null;
@@ -33,11 +37,11 @@ export default function TaskMenu() {
     console.log(`valor do newIsChecked: ${newIsChecked}`);
     setTasksStates(newIsChecked);
     console.log(`valor do taskStates: ${tasksStates}`);
-    updateList(selectedTask._id!, newIsChecked);
+    if (isList(selectedTask)) updateList(selectedTask._id!, newIsChecked);
   };
    function handleLists() {
     const items = [];
-    if (selectedTask?.tasksCounter && selectedTask?.tasksStatus && selectedTask?.tasksTitles){
+    if (isList(selectedTask) && selectedTask?.tasksCounter && selectedTask?.tasksStatus && selectedTask?.tasksTitles){
     for (let i = 1; i <= selectedTask!.tasksCounter; i++) {
       items.push(
         <li key={i - 1} className="flex items-center gap-2">
@@ -71,7 +75,7 @@ export default function TaskMenu() {
   function HandleVisual() {
     // condicionais usando selectedTask.scheduleDate apenas para verificar se foi passada uma note ao invés de uma task
     // porque notes não possuem scheduleDate
-    if (selectedTask && !selectedTask.isCompleted) {
+    if (isTask(selectedTask) && !selectedTask.isCompleted) {
       return (
         <div className="w-full absolute bottom-8">
           <div className="flex flex-row items-center">
@@ -188,27 +192,27 @@ export default function TaskMenu() {
     <div className="relative w-full h-full bg-[#F3EDED] py-[14px] px-3 shadow-lg shadow-gray-500/50 rounded-2xl">
       <div
         className={
-          selectedTask.type != "note"
+          !isNote(selectedTask)
             ? "flex items-center justify-between gap-[23px]"
             : "flex flex-col items-center"
         }
       >
         <h2
           className={
-            selectedTask.type == "note"
+            isNote(selectedTask)
               ? "text-center font-bold text-2xl mx-auto"
               : "font-bold text-2xl"
           }
-          dangerouslySetInnerHTML={{ __html: selectedTask.title }}
+          dangerouslySetInnerHTML={ isTask(selectedTask) ? { __html: selectedTask.title } : {__html: "unknown"}}
         ></h2>
         <div className="flex gap-3">
-          {selectedTask.createdAt && (
+          {isTask(selectedTask) && selectedTask.createdAt && (
             <span>
               Created at:{" "}
               <span className="font-bold">{selectedTask.createdAt}</span>
             </span>
           )}
-          {selectedTask.scheduleDate && (
+          {isTask(selectedTask) && selectedTask.scheduleDate && (
             <p>
               Scheduled To:{" "}
               {selectedTask.scheduleDate ? (
@@ -221,7 +225,7 @@ export default function TaskMenu() {
         </div>
       </div>
         <div>
-          {selectedTask.type == "note" && <div className="w-full h-auto">
+          {isNote(selectedTask) && <div className="w-full h-auto">
             <TextFormatter
               inputText={userFormattedTextInput}
               text={selectedTask.description}
@@ -229,7 +233,7 @@ export default function TaskMenu() {
             />
           </div>
           }
-          {selectedTask.type == "task" && <textarea
+          {isTask(selectedTask) && <textarea
             name="description"
             value={selectedTask.description}
             className="w-full h-full bg-transparent mt-6 focus:outline-none"
@@ -237,10 +241,10 @@ export default function TaskMenu() {
           />
           }
         </div>
-      {selectedTask.type == "list" && selectedTask.tasksStatus && (
+      {isList(selectedTask) && selectedTask.tasksStatus && (
         <ul className="flex flex-col gap-2 my-4 mx-5">{handleLists()}</ul>
       )}
-      {selectedTask.type == "list" && (
+      {isList(selectedTask) && (
         <div className="flex items-center gap-1 mx-4">
           <label className="italic opacity-50">
             {calculateCompletedListPercentage()}%
@@ -267,7 +271,7 @@ export default function TaskMenu() {
         minutes={25}
         openModal={openPomodoro}
         setOpenModal={setOpenPomodoro}
-        content={selectedTask}
+        content={selectedTask as taskTypes}
       />
     </div>
   );
