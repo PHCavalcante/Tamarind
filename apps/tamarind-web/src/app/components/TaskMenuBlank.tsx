@@ -110,7 +110,7 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
                 type="checkbox"
                 checked={isChecked[i - 1]}
                 onChange={() => handleCheckboxChange(i - 1)}
-                className="w-5 h-5 peer mr-2"
+                className="w-5 h-5 peer mr-2 accent-[#201335bb]"
               />
               <label
                 htmlFor={`task ${i}`}
@@ -268,34 +268,36 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
         </ul>
       )}
       {action == "Note" && (
-        <TextFormatter readOnly={false} text={""} inputText={userFormattedTextInput} />
+        <TextFormatter
+          readOnly={false}
+          text={""}
+          inputText={userFormattedTextInput}
+        />
       )}
-      <div>
-        <button
-          className="w-full h-10 bg-[#FF5C5C] text-white font-bold rounded-lg"
-          onClick={
-            action === "List"
-              ? () => {
-                  list.current.userId = details.userId;
-                  list.current.createdAt = createdAt;
-                  list.current.title = details.title;
-                  list.current.tasksCounter = counter.tasksCounter;
-                  list.current.tasksStatus = isChecked;
-                  postList(list.current);
-                  setSelectedTask(null);
-                }
-              : () => {
-                  const prev = details.title;
-                  details.title = emoji.current + " " + prev;
-                  details.createdAt = createdAt;
-                  details.description = userFormattedTextInput.current;
-                  postNote(details);
-                }
-          }
-        >
-          Save
-        </button>
-      </div>
+      <button
+        className="w-full h-10 bg-[#201335bb] text-white font-bold rounded-lg mt-auto hover:bg-[#201335dd]"
+        onClick={
+          action === "List"
+            ? () => {
+                list.current.userId = details.userId;
+                list.current.createdAt = createdAt;
+                list.current.title = details.title;
+                list.current.tasksCounter = counter.tasksCounter;
+                list.current.tasksStatus = isChecked;
+                postList(list.current);
+                setSelectedTask(null);
+              }
+            : () => {
+                const prev = details.title;
+                details.title = emoji.current + " " + prev;
+                details.createdAt = createdAt;
+                details.description = userFormattedTextInput.current;
+                postNote(details);
+              }
+        }
+      >
+        Save
+      </button>
     </div>
   );
 }
