@@ -104,8 +104,15 @@ export default function Kanban() {
                 taskGrabed.current = processedTask;
               }}
             >
-              <span className="font-semibold text-lg">{processedTask.title}</span>
-              <span className="text-sm opacity-60">Schedule to: {processedTask.scheduleDate}</span>
+              <span className="font-semibold text-lg">
+                {processedTask.title}
+              </span>
+              <span className="text-sm opacity-60">
+                Schedule to: {processedTask.scheduleDate}
+              </span>
+              <span className="text-sm opacity-60">
+                Created at: {processedTask.createdAt}
+              </span>
             </li>
           );
         }));
@@ -113,6 +120,7 @@ export default function Kanban() {
 
   return (
     <div className="flex flex-col w-full h-full bg-[#F3EDED] py-[14px] px-3 shadow-lg shadow-gray-500/50 rounded-2xl">
+      {/* <h1 className="text-center text-3xl font-bold my-2">Kanban</h1> */}
       <div className="grid grid-flow-row grid-cols-1 h-full md:grid-cols-3 gap-4">
         <div
           className="flex flex-col bg-[#FFF9F9] w-full h-full rounded-2xl items-center shadow-lg border-2 border-solid transition-all duration-300 ease-in-out border-gray-300 hover:shadow-xl hover:border-gray-400"
