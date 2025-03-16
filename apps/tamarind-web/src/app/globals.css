@@ -22,3 +22,14 @@ body {
   padding: 0;
   margin: 0;
 }
+/* bi09khh is the toolbar buttons from draftJs */
+.bi09khh {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  transition: background-color 0.3s ease;
+}
+.bi09khh:hover {
+  background-color: #ddd7d7;
+}
