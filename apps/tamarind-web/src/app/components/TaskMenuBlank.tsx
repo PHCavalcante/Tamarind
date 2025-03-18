@@ -159,7 +159,7 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
     return items;
   }
   return (
-    <div className="flex flex-col w-full h-full bg-[#F3EDED] py-[14px] px-3 shadow-lg shadow-gray-500/50">
+    <div className="flex flex-col w-full h-full bg-[#F3EDED] py-[14px] px-3 shadow-lg shadow-gray-500/50 gap-10 overflow-auto">
       <div className="flex flex-col w-auto content-center items-center justify-center">
         <div className="flex items-center gap-2">
           {showPicker && (
@@ -267,15 +267,17 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
           </div> */}
         </ul>
       )}
-      {action == "Note" && (
-        <TextFormatter
-          readOnly={false}
-          text={""}
-          inputText={userFormattedTextInput}
-        />
-      )}
+      <div className="scrollbar flex-1 overflow-scroll ">
+        {action == "Note" && (
+          <TextFormatter
+            readOnly={false}
+            text={""}
+            inputText={userFormattedTextInput}
+          />
+        )}
+      </div>
       <button
-        className="w-full h-10 bg-[#201335bb] text-white font-bold rounded-lg mt-auto hover:bg-[#201335dd]"
+        className="w-full h-10 bg-[#201335bb] text-white font-bold rounded-lg hover:bg-[#201335dd]"
         onClick={
           action === "List"
             ? () => {
