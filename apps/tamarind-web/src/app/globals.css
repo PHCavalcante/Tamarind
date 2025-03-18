@@ -33,3 +33,14 @@ body {
 .bi09khh:hover {
   background-color: #ddd7d7;
 }
+#toolbar-active-button {
+  background-color: #9c9898;
+  border-radius: 4px;
+}
+.scrollbar {
+  overflow: auto;
+  scrollbar-width: auto;
+  scrollbar-color: #FFF9F9 #ddd7d7;
+  scroll-behavior: smooth;
+  scrollbar-highlight-color: aqua;
+}
