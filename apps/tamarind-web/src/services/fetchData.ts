@@ -3,7 +3,9 @@ import { taskTypes, noteTypes, listTypes } from "@/types/dataTypes";
 
 export async function fetchData(userId: string){
     try{
-        const response = await axios.get(`http://localhost:3000/tasks/${userId}`);
+        const response = await axios.get(
+          `https://tamarind-api.onrender.com/${userId}`
+        );
         return response.data;
     } catch (error){
         console.error(error);
@@ -11,7 +13,10 @@ export async function fetchData(userId: string){
 }
 export async function postTask(newTask: taskTypes){
     try{
-        const response = await axios.post("http://localhost:3000/tasks", newTask);
+        const response = await axios.post(
+          "https://tamarind-api.onrender.com/tasks",
+          newTask
+        );
         console.log(response);
         return response.data;
     } catch (error){
@@ -20,15 +25,17 @@ export async function postTask(newTask: taskTypes){
 }
 export async function updateTask(task : taskTypes){
     try{
-        const response = await axios.put(`http://localhost:3000/tasks/${task._id}`,
-            {
-                "title": task.title,
-                "description": task.description,
-                "scheduleDate": task.scheduleDate,
-                "isCompleted": task.isCompleted,
-                "type": task.type,
-                "inProgress": task.inProgress
-            });
+        const response = await axios.put(
+          `https://tamarind-api.onrender.com/tasks/${task._id}`,
+          {
+            title: task.title,
+            description: task.description,
+            scheduleDate: task.scheduleDate,
+            isCompleted: task.isCompleted,
+            type: task.type,
+            inProgress: task.inProgress,
+          }
+        );
             console.log(response);
             return response.data;
     } catch (error){
@@ -37,13 +44,15 @@ export async function updateTask(task : taskTypes){
 }
 export async function markTaskAsCompleted(task: taskTypes){
     try{
-        const response = await axios.put(`http://localhost:3000/tasks/${task._id}`, 
-            {
-                 "title": task.title,
-                "description": task.description,
-                "scheduleDate": task.scheduleDate,
-                "isCompleted": true
-            });
+        const response = await axios.put(
+          `https://tamarind-api.onrender.com/tasks/${task._id}`,
+          {
+            title: task.title,
+            description: task.description,
+            scheduleDate: task.scheduleDate,
+            isCompleted: true,
+          }
+        );
             console.log(response);
             return response.data;
     } catch (error){
@@ -52,7 +61,9 @@ export async function markTaskAsCompleted(task: taskTypes){
 }
 export async function deleteTask(taskId : string){
     try{
-        const response = await axios.delete(`http://localhost:3000/tasks/${taskId}`);
+        const response = await axios.delete(
+          `https://tamarind-api.onrender.com/tasks/${taskId}`
+        );
         return response;
     } catch (error){
         console.error(error);
@@ -60,7 +71,10 @@ export async function deleteTask(taskId : string){
 }
 export async function postNote(newNote:noteTypes){
     try{
-        const response = await axios.post("http://localhost:3000/notes", newNote);
+        const response = await axios.post(
+          "https://tamarind-api.onrender.com/notes",
+          newNote
+        );
         console.log(response);
         return response;
     } catch (error){
@@ -69,7 +83,9 @@ export async function postNote(newNote:noteTypes){
 }
 export async function deleteNote(noteId: string){
     try{
-        const response = await axios.delete(`http://localhost:3000/notes/${noteId}`)
+        const response = await axios.delete(
+          `https://tamarind-api.onrender.com/notes/${noteId}`
+        );
         console.log(response);
         return response;
     } catch (error){
@@ -78,13 +94,14 @@ export async function deleteNote(noteId: string){
 }
 export async function updateNote(note: noteTypes){
     try{
-        const response = await axios.put(`http://localhost:3000/notes/${note._id}`,
-            {
-                title: note.title,
-                description: note.description,
-                createdAt: note.createdAt,
-                userId: note.userId
-            }
+        const response = await axios.put(
+          `https://tamarind-api.onrender.com/notes/${note._id}`,
+          {
+            title: note.title,
+            description: note.description,
+            createdAt: note.createdAt,
+            userId: note.userId,
+          }
         );
         console.log(response);
         return response;
@@ -94,7 +111,10 @@ export async function updateNote(note: noteTypes){
 }
 export async function postList(newList: listTypes){
     try{
-        const response = await axios.post("http://localhost:3000/lists", newList);
+        const response = await axios.post(
+          "https://tamarind-api.onrender.com/lists",
+          newList
+        );
         console.log(response);
         return response;
     } catch (error){
@@ -103,10 +123,11 @@ export async function postList(newList: listTypes){
 }
 export async function updateList(listId: string, tasksStatus : boolean[]){
     try{
-        const response = await axios.put(`http://localhost:3000/lists/${listId}`,
-            {
-                tasksStatus: tasksStatus
-            }
+        const response = await axios.put(
+          `https://tamarind-api.onrender.com/lists/${listId}`,
+          {
+            tasksStatus: tasksStatus,
+          }
         );
         console.log(response);
         return response;
@@ -116,7 +137,9 @@ export async function updateList(listId: string, tasksStatus : boolean[]){
 }
 export async function deleteList(listId: string){
      try {
-       const response = await axios.delete(`http://localhost:3000/lists/${listId}`);
+       const response = await axios.delete(
+         `https://tamarind-api.onrender.com/lists/${listId}`
+       );
        console.log(response);
        return response;
      } catch (error) {
