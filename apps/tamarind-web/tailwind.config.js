@@ -25,10 +25,20 @@ module.exports = {
         "0%": { transform: "rotate(0deg)" },
         "100%": { transform: "rotate(360deg)" },
       },
+      fadeIn: {
+        "0%": { transform: "translateY(-10px)", opacity: "0" },
+        "100%": { transform: "translateY(0)", opacity: "1" },
+      },
+      fadeOut: {
+        "0%": { transform: "translateY(0)", opacity: "1" },
+        "100%": { transform: "translateY(-10px)", opacity: "0" },
+      },
     },
     animation: {
       typing: "typing 1s steps(20) alternate",
       spin: "spin 1s linear infinite",
+      snackBarIn: "fadeIn 0.4s ease-in-out forwards",
+      snackBarOut: "fadeOut 0.4s ease-in-out 2.7s forwards",
     },
   },
   plugins: [],

@@ -4,12 +4,12 @@ import menu from "../../assets/menu.svg";
 import { useState, useEffect, useRef, JSX } from "react";
 import add from "../../assets/add.svg";
 import dropdown from "../../assets/dropdown.svg";
-import settings from "../../assets/settings.svg";
 import Modal from "./Modal";
 import SettingsModal from "./SettingsModal";
 import axios from "axios";
 import arrow from "../../assets/arrow.svg";
 import { UseTaskContext } from "@/hooks/taskContext";
+import { UseSnackbarContext } from "@/hooks/snackbarContext";
 import GetUserData from "@/utils/GetUserData";
 import { combination, listTypes, noteTypes, taskTypes } from "@/types/dataTypes";
 import arrowRight from "../../assets/arrowRight.svg";
@@ -35,6 +35,7 @@ export default function Menu() {
     lists: true,
     notes: true,
   });
+  const {openSnackbar} = UseSnackbarContext();
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -42,19 +43,19 @@ export default function Menu() {
         if (!user) return;
         if (data.length == 0) {
           const response = await axios.get(
-            `http://localhost:3000/tasks/${user.id}`
+            `https://tamarind-api.onrender.com/tasks/${user.id}`
           );
           setData(response.data);
         }
         if (notes.length == 0) {
           const response = await axios.get(
-            `http://localhost:3000/notes/${user.id}`
+            `https://tamarind-api.onrender.com/notes/${user.id}`
           );
           setNotes(response.data);
         }
         if (lists.length == 0) {
           const response = await axios.get(
-            `http://localhost:3000/lists/${user.id}`
+            `https://tamarind-api.onrender.com/lists/${user.id}`
           );
           setLists(response.data);
         }
@@ -63,7 +64,7 @@ export default function Menu() {
       }
     };
     fetchTasks();
-  }, [user, data, lists, notes]);
+  },[user, openSnackbar]);
 
   const parseTasks = () => {
     const notCompletedTasks = data.filter((task:taskTypes) => task.isCompleted == false && task.inProgress == false);
@@ -194,8 +195,8 @@ export default function Menu() {
     <div
       className={
         isOpen
-          ? "flex flex-col min-w-96 w-96 h-screen transition-all duration-500 bg-[#F3EDED] px-[30px] shadow-lg shadow-gray-500/50"
-          : "flex flex-col h-screen bg-[#F3EDED] shadow-lg shadow-gray-500/50 px-2 items-center gap-3 transition-all duration-500"
+          ? "absolute z-10 md:relative md:min-w-96 md:w-96 flex flex-col h-screen transition-all duration-500 ease-in-out bg-[#F3EDED] px-[30px] shadow-lg shadow-gray-500/50"
+          : "flex flex-col h-screen bg-[#F3EDED] shadow-lg shadow-gray-500/50 px-2 items-center gap-3 transition-all ease-in-out duration-500"
       }
     >
       <div
@@ -212,19 +213,22 @@ export default function Menu() {
             width={45}
             className="pb-2 max-w-full max-h-full overflow-hidden"
           />
-          <h1 className={isOpen ? "text-2xl font-semibold" : "hidden"}>
+          <h1 className={isOpen ? "text-2xl font-semibold" : "opacity-0 w-0 h-0"}>
             Tamarind
           </h1>
         </div>
-        <button className="transition-all duration-700 hover:rotate-90" onClick={() => setIsOpen(!isOpen)}>
+        <button
+          className={`transition-all duration-700 ${isOpen ? "hover:rotate-90" : "rotate-90 hover:rotate-0"}`}
+          onClick={() => setIsOpen(!isOpen)}
+        >
           <Image src={menu} width={40} alt="Menu Icon" />
         </button>
       </div>
       <form
         className={
           isOpen
-            ? "relative flex w-full flex-wrap items-center gap-1 mb-3"
-            : "hidden"
+            ? "relative flex w-full flex-wrap items-center gap-1 mb-3 transition-all duration-500 ease-in-out"
+            : "w-0 h-0 absolute opacity-0 pointer-events-none"
         }
       >
         <button>
@@ -236,16 +240,21 @@ export default function Menu() {
           value={inputSearchValue.current}
           placeholder="Search for tasks, notes or lists..."
           maxLength={50}
-          onChange={(e) => {inputSearchValue.current = e.target.value; parseSearch(e.target.value)}}
+          onChange={(e) => {
+            inputSearchValue.current = e.target.value;
+            parseSearch(e.target.value);
+          }}
         />
         <div
           className={
             inputSearchValue.current != ""
               ? "absolute flex flex-col h-auto min-h-7 top-7 left-0 right-0 border-2 border-[#c0baba] bg-gradient-to-tl from-[#FFF9F9] via-[#e4dede] to-[#F3EDED] transition-opacity duration-300 animate-modal "
-                : "opacity-0 hidden"
-            }
-          >
-          {searchItems.length == 0 && <div className="border-8 border-solid border-t-8 mx-auto border-t-[#000000] rounded-full w-10 h-10 animate-spin"/>}
+              : "opacity-0 w-0 h-0 pointer-events-none"
+          }
+        >
+          {searchItems.length == 0 && (
+            <div className="border-8 border-solid border-t-8 mx-auto border-t-[#000000] rounded-full w-10 h-10 animate-spin" />
+          )}
           <ul className="flex flex-col gap-1">{searchItems}</ul>
         </div>
       </form>
@@ -262,18 +271,18 @@ export default function Menu() {
         >
           <Image src={kanban} alt="Kanban view icon" />
         </button>
-        <button
+        {/* <button
           className="flex hover:bg-[#e4dede] transition-all duration-500 hover:rotate-180"
           onClick={() => setOpenSettingsModal(true)}
         >
           <Image src={settings} alt="Settings Button" />
-        </button>
+        </button> */}
       </div>
       <div
         className={
           isOpen
-            ? "bg-[#FFF9F9] h-full pt-[18px] px-[15px] mb-5 rounded-xl overflow-y-auto"
-            : "hidden"
+            ? "bg-[#FFF9F9] h-full pt-[18px] px-[15px] mb-5 rounded-xl overflow-y-auto transition-all duration-500 ease-in-out"
+            : "opacity-0 w-0 pointer-events-none"
         }
       >
         <div className="flex flex-col h-full">

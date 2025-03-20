@@ -6,7 +6,7 @@ import Image from "next/image";
 import { postList, postNote } from "@/services/fetchData";
 import EmojiPicker from "./EmojiPicker";
 import createdAt from "@/utils/getFormattedDateTime";
-import { listTypes } from "@/types/dataTypes";
+import { listTypes, taskTypes } from "@/types/dataTypes";
 import add from "../../assets/add.svg";
 import pencil from "../../assets/pencil.svg";
 
@@ -59,7 +59,7 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
       if (
         e.key === "Backspace" &&
         (e.target as HTMLInputElement).value === ""
-        && selectedTask == "List"
+        && typeof selectedTask == "string" && selectedTask == "List"
       ) {
         setCounter((prevCounter) => {
           const newCounter = prevCounter.tasksCounter - 1;
@@ -79,7 +79,10 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isChecked]);
+  }, [isChecked, selectedTask]);
+
+  const isTask = (task: unknown): task is taskTypes =>
+      typeof task === "object" && task !== null && "title" in task;
 
   const handleCheckboxChange = (index: number) => {
     const newIsChecked = [...isChecked];
@@ -107,7 +110,7 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
                 type="checkbox"
                 checked={isChecked[i - 1]}
                 onChange={() => handleCheckboxChange(i - 1)}
-                className="w-5 h-5 peer mr-2"
+                className="w-5 h-5 peer mr-2 accent-[#201335bb]"
               />
               <label
                 htmlFor={`task ${i}`}
@@ -156,7 +159,7 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
     return items;
   }
   return (
-    <div className="flex flex-col w-full h-full bg-[#F3EDED] py-[14px] px-3 shadow-lg shadow-gray-500/50">
+    <div className="flex flex-col w-full h-full bg-[#F3EDED] py-[14px] px-3 shadow-lg shadow-gray-500/50 gap-10 overflow-auto">
       <div className="flex flex-col w-auto content-center items-center justify-center">
         <div className="flex items-center gap-2">
           {showPicker && (
@@ -195,7 +198,7 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
             className="bg-transparent text-2xl font-bold focus:outline-none"
           />
         </div>
-        {selectedTask?.createdAt && (
+        {isTask(selectedTask) && selectedTask?.createdAt && (
           <span className="opacity-50">
             Created at: <span className="font-bold">{createdAt}</span>
           </span>
@@ -264,35 +267,39 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
           </div> */}
         </ul>
       )}
-      {action == "Note" && (
-        <TextFormatter readOnly={false} text={""} inputText={userFormattedTextInput} />
-      )}
-      <div>
-        <button
-          className="w-full h-10 bg-[#FF5C5C] text-white font-bold rounded-lg"
-          onClick={
-            action === "List"
-              ? () => {
-                  list.current.userId = details.userId;
-                  list.current.createdAt = createdAt;
-                  list.current.title = details.title;
-                  list.current.tasksCounter = counter.tasksCounter;
-                  list.current.tasksStatus = isChecked;
-                  postList(list.current);
-                  setSelectedTask(null);
-                }
-              : () => {
-                  const prev = details.title;
-                  details.title = emoji.current + " " + prev;
-                  details.createdAt = createdAt;
-                  details.description = userFormattedTextInput.current;
-                  postNote(details);
-                }
-          }
-        >
-          Save
-        </button>
+      <div className="scrollbar flex-1 overflow-scroll ">
+        {action == "Note" && (
+          <TextFormatter
+            readOnly={false}
+            text={""}
+            inputText={userFormattedTextInput}
+          />
+        )}
       </div>
+      <button
+        className="w-full h-10 bg-[#201335bb] text-white font-bold rounded-lg hover:bg-[#201335dd]"
+        onClick={
+          action === "List"
+            ? () => {
+                list.current.userId = details.userId;
+                list.current.createdAt = createdAt;
+                list.current.title = details.title;
+                list.current.tasksCounter = counter.tasksCounter;
+                list.current.tasksStatus = isChecked;
+                postList(list.current);
+                setSelectedTask(null);
+              }
+            : () => {
+                const prev = details.title;
+                details.title = emoji.current + " " + prev;
+                details.createdAt = createdAt;
+                details.description = userFormattedTextInput.current;
+                postNote(details);
+              }
+        }
+      >
+        Save
+      </button>
     </div>
   );
 }

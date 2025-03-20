@@ -1,6 +1,6 @@
 import GetUserData from "@/utils/GetUserData";
 import { UseTaskContext } from "@/hooks/taskContext";
-import { taskTypes } from "@/types/dataTypes";
+import { listTypes, noteTypes, taskTypes } from "@/types/dataTypes";
 import { Dispatch, SetStateAction, useState, useRef, RefObject } from "react";
 import {
   updateTask,
@@ -11,6 +11,7 @@ import {
   deleteList,
 } from "@/services/fetchData";
 import createdAt from "@/utils/getFormattedDateTime";
+import { UseSnackbarContext } from "@/hooks/snackbarContext";
 
 type modalProps = {
   openModal: boolean;
@@ -28,9 +29,23 @@ export default function Modal({
   const user = GetUserData();
   const { selectedTask, setSelectedTask } = UseTaskContext();
   const [value, setValue] = useState(false);
-  const [descriptionLenght, setDescriptionLenght] = useState(0);
+  const [descriptionLength, setDescriptionLength] = useState(0);
+  const { setOpenSnackbar, setSnackbarMessage } = UseSnackbarContext();
+
+  const isTask = (task: unknown): task is taskTypes =>
+    typeof task === "object" && task !== null && "title" in task;
+
+  const isList = (list: unknown): list is listTypes =>
+    typeof list === "object" && list !== null && "tasksCounter" in list;
+
+  const isNote = (note: unknown): note is noteTypes =>
+    typeof note === "object" && note !== null && "description" in note;
+
   const formValues = useRef({
-    _id: selectedTask?._id,
+    _id:
+      isTask(selectedTask) || isNote(selectedTask)
+        ? (selectedTask._id ?? undefined)
+        : undefined,
     title: "",
     description: "",
     scheduleDate: "",
@@ -43,25 +58,14 @@ export default function Modal({
   if (user) {
     formValues.current.userId = user.id ?? "";
   }
-  function removeFromStorage() {
-    if (selectedTask) {
-      const existingTasks: taskTypes[] = JSON.parse(
-        localStorage.getItem("tasks") || "[]"
-      );
-      const updatedTasks = existingTasks.filter(
-        (task) => task._id !== String(selectedTask._id)
-      );
-      console.log(updatedTasks);
-      localStorage.setItem("tasks", JSON.stringify(updatedTasks));
-    }
-  }
+
   function handleAction() {
     if (action == "Delete" || action == "Finished") {
       return (
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center text-center">
           <h1>
             {action == "Delete"
-              ? `Are you sure you want to delete this ${selectedTask?.type}?`
+              ? `Are you sure you want to delete this ${isTask(selectedTask) && selectedTask.type}?`
               : "Mark task as done?"}
           </h1>
           <p>
@@ -82,34 +86,46 @@ export default function Modal({
             <button
               onClick={
                 action == "Delete" &&
-                !selectedTask!.isCompleted &&
-                selectedTask?.type == "task"
+                isTask(selectedTask) &&
+                selectedTask.type == "task" &&
+                !selectedTask.isCompleted
                   ? () => {
                       deleteTask(selectedTask._id!);
                       setOpenModal(false);
                       setSelectedTask(null);
+                      setOpenSnackbar(true);
+                      setSnackbarMessage("Delete");
                     }
-                  : action == "Delete" && selectedTask?.isCompleted
-                  ? () => {
-                      removeFromStorage();
-                      setOpenModal(false);
-                      setSelectedTask(null);
-                    }
-                  : action == "Delete" && selectedTask?.type == "note"
-                  ? () => {
-                      deleteNote(selectedTask!._id!);
-                      setSelectedTask(null);
-                    }
-                  : action == "Delete" && selectedTask?.type == "list"
-                  ? () => {
-                      deleteList(selectedTask._id!);
-                      setSelectedTask(null);
-                    }
-                  : () => {
-                      selectedTask!.isCompleted = true;
-                      updateTask(selectedTask!);
-                      setOpenModal(false);
-                    }
+                  : action == "Delete" &&
+                      isTask(selectedTask) &&
+                      selectedTask.isCompleted
+                    ? () => {
+                        setOpenModal(false);
+                        setSelectedTask(null);
+                        setOpenSnackbar(true);
+                        setSnackbarMessage("Delete");
+                      }
+                    : action == "Delete" && isNote(selectedTask)
+                      ? () => {
+                          deleteNote(selectedTask._id!);
+                          setSelectedTask(null);
+                          setOpenSnackbar(true);
+                          setSnackbarMessage("DeleteNote");
+                        }
+                      : action == "Delete" && isList(selectedTask)
+                        ? () => {
+                            deleteList(selectedTask._id!);
+                            setSelectedTask(null);
+                            setOpenSnackbar(true);
+                            setSnackbarMessage("DeleteList");
+                          }
+                        : () => {
+                            if (isTask(selectedTask)) {
+                              selectedTask!.isCompleted = true;
+                            }
+                            updateTask(selectedTask as taskTypes);
+                            setOpenModal(false);
+                          }
               }
               className="bg-[#FF5C5C] text-white font-bold w-24 py-2 px-2 rounded-lg mx-auto hover:scale-105"
             >
@@ -126,7 +142,9 @@ export default function Modal({
             required
             type="text"
             placeholder={
-              action == "Edit" ? `New ${selectedTask?.type} name` : "Task name"
+              action == "Edit"
+                ? `New ${isTask(selectedTask) && selectedTask?.type} name`
+                : "Task name"
             }
             autoFocus
             autoCapitalize="words"
@@ -134,16 +152,19 @@ export default function Modal({
             onChange={(e) => (formValues.current.title = e.target.value)}
           />
           <textarea
-            className="bg-white h-40 rounded-lg p-2 w-[800px] max-w-full"
+            className="bg-white min-h-40 rounded-lg p-2 max-h-[200px]"
             maxLength={500}
             placeholder={
               action == "Edit"
-                ? `New ${selectedTask?.type} description`
+                ? `New ${isTask(selectedTask) && selectedTask?.type} description`
                 : "Task description"
             }
-            onChange={(e) => {formValues.current.description = e.target.value; setDescriptionLenght(e.target.value.length)}}
+            onChange={(e) => {
+              formValues.current.description = e.target.value;
+              setDescriptionLength(e.target.value.length);
+            }}
           />
-          <span className="self-end">{descriptionLenght}/500</span>
+          <span className="self-end">{descriptionLength}/500</span>
           <div className="flex items-center justify-between max-w-[70%]">
             {action == "Add new" && (
               <div className="flex items-center gap-2">
@@ -171,13 +192,12 @@ export default function Modal({
                       new Date(e.target.value).toLocaleDateString() +
                       " " +
                       new Date(e.target.value).toLocaleTimeString();
-                    console.log(formValues.current.scheduleDate);
                   }}
                 />
               </div>
             )}
           </div>
-          <div className="flex justify-between mt-3 w-[50%] mx-auto">
+          <div className="flex justify-between mt-3 md:w-[50%] md:mx-auto">
             <button
               className="text-[#FF5C5C] font-bold max-w-fit py-2 px-2 rounded-lg mx-auto hover:bg-[#FF5C5C22]"
               onClick={() => setOpenModal(false)}
@@ -185,18 +205,43 @@ export default function Modal({
               Cancel
             </button>
             <button
-              onClick={() =>
-                action == "Edit" && selectedTask?.type == "task"
-                  ? updateTask({ ...formValues.current, type: "task" })
-                  : action == "Add new"
-                  ? postTask({ ...formValues.current, type: "task" })
-                  : action == "Edit" && selectedTask?.type == "note"
-                  ? updateNote(formValues.current)
-                  : null
-              }
+              type="button"
+              onClick={(event) => {
+                event.preventDefault();
+                if (
+                  action == "Edit" &&
+                  isTask(selectedTask) &&
+                  selectedTask?.type == "task"
+                ) {
+                  updateTask({
+                    ...formValues.current,
+                    type: "task",
+                    _id: formValues.current._id ?? undefined,
+                  });
+                  setOpenModal(false);
+                  setOpenSnackbar(true);
+                  setSnackbarMessage("Update");
+                } else if (action == "Add new") {
+                  postTask({ ...formValues.current, type: "task" });
+                  setOpenModal(false);
+                  setOpenSnackbar(true);
+                  setSnackbarMessage("Add");
+                } else if (
+                  action == "Edit" &&
+                  isTask(selectedTask) &&
+                  selectedTask?.type == "note"
+                ) {
+                  updateNote(formValues.current);
+                  setOpenSnackbar(true);
+                  setSnackbarMessage("UpdateNote");
+                }
+              }}
               className="bg-[#201335bb] font-bold text-[#fff] max-w-fit py-2 px-2 rounded-lg mx-auto hover:bg-[#201335dd]"
             >
-              {action} {selectedTask?.type == "note" ? "note" : "task"}
+              {action}{" "}
+              {isTask(selectedTask) && selectedTask?.type == "note"
+                ? "note"
+                : "task"}
             </button>
           </div>
         </form>
@@ -213,18 +258,19 @@ export default function Modal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="flex flex-col bg-[#F3EDED] w-fit max-w-[50%] mx-auto rounded-xl py-5 px-5 transform transition-all duration-300 animate-modal"
+        className={`flex flex-col max-h-full bg-[#F3EDED] min-w-fit ${action == "Delete" || action == "Finished" ? "w-fit" : "max-w-[50%]"} mx-auto rounded-xl py-5 px-5 transform transition-all duration-300 animate-modal`}
       >
         <div className="flex justify-between mb-5">
           <h2 className="font-bold text-2xl mx-auto">
             {action}{" "}
-            {selectedTask?.type == "note"
-              ? "note"
-              : selectedTask?.type == "task"
-              ? "task"
-              : selectedTask?.type == "list"
-                ? "list"
-              : "task"}
+            {isTask(selectedTask) &&
+              (selectedTask?.type == "note"
+                ? "note"
+                : selectedTask?.type == "task"
+                  ? "task"
+                  : selectedTask?.type == "list"
+                    ? "list"
+                    : "task")}
           </h2>
         </div>
         {handleAction()}

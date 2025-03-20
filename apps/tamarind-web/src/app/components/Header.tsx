@@ -38,17 +38,17 @@ export default function Header(){
     }, []);
 
     return (
-      <header className="flex w-full h-16 justify-between items-center bg-[#F3EDED] content-center px-3 rounded-2xl shadow-lg">
+      <header className="flex flex-col w-full h-16 items-center bg-[#F3EDED] content-center px-3 rounded-2xl shadow-lg sm:justify-between sm:flex-row">
         {isPageLoaded && <div className="flex items-center justify-center">
           <div className="w-max">
-            <h1 className="animate-typing overflow-hidden whitespace-nowrap text-xl">
+            <h1 className="animate-typing overflow-hidden whitespace-nowrap text-lg md:text-xl">
               {greetings.at(Math.floor(Math.random() * greetings.length))} {user && user.firstName}
             </h1>
           </div>
         </div>
         }
-        <div className="flex ml-auto items-center gap-3">
-          <p className="font-light">{weekDay}</p>
+        <div className="flex items-center gap-3">
+          <p className="text-sm md:text-base opacity-60">{weekDay}</p>
           <UserButton />
         </div>
       </header>

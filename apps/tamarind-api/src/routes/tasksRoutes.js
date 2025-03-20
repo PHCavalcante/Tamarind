@@ -3,8 +3,8 @@ import cors from "cors";
 import { listTasks, sendNewTask, editTask, removeTask, sendNewNote, ListNotes, removeNote, editNote, sendNewList, listLists, editList, removeList } from "../controllers/tasksController.js";
 
 const corsOptions = {
-    origin: "http://localhost:3001",
-    optionSuccessStatus: 200
+  origin: "https://tamarind.vercel.app",
+  optionSuccessStatus: 200,
 };
 
 const routes = (app) => {

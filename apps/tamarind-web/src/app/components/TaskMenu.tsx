@@ -9,20 +9,23 @@ import Pomodoro from "./Pomodoro";
 import { updateList, updateTask, updateNote } from "@/services/fetchData";
 import inProgress from "../../assets/inProgress.svg"
 import TextFormatter from "./TextFormatter";
+import { isTask, isNote, isList } from "@/utils/dataCheck";
+import { taskTypes } from "@/types/dataTypes";
 
 export default function TaskMenu() {
   const { selectedTask } = UseTaskContext();
   const [openModal, setOpenModal] = useState(false);
   const [openPomodoro, setOpenPomodoro] = useState(false);
-  const [tasksStates, setTasksStates] = useState<boolean[]>(selectedTask?.tasksStatus || []);
+  const [tasksStates, setTasksStates] = useState<boolean[]>(isList(selectedTask) && selectedTask?.tasksStatus || []);
   const [action, setAction] = useState("");
   const checkboxValue = useRef(false);
   const [editorReadOnly, setEditorReadOnly] = useState(true);
+  const [openContextMenu, setOpenContextMenu] = useState(false);
   const userFormattedTextInput = useRef("");
 
   useEffect(() => {
-    if (!selectedTask?.tasksStatus) return;
-    setTasksStates(selectedTask?.tasksStatus);
+    if (isList(selectedTask) && !selectedTask?.tasksStatus) return;
+    if (isList(selectedTask)) setTasksStates(selectedTask.tasksStatus);
   },[selectedTask]);
 
   if (!selectedTask) return null;
@@ -30,14 +33,12 @@ export default function TaskMenu() {
   const handleCheckboxChange = (index: number) => {
     const newIsChecked = [...tasksStates];
     newIsChecked[index] = !newIsChecked[index];
-    console.log(`valor do newIsChecked: ${newIsChecked}`);
     setTasksStates(newIsChecked);
-    console.log(`valor do taskStates: ${tasksStates}`);
-    updateList(selectedTask._id!, newIsChecked);
+    if (isList(selectedTask)) updateList(selectedTask._id!, newIsChecked);
   };
    function handleLists() {
     const items = [];
-    if (selectedTask?.tasksCounter && selectedTask?.tasksStatus && selectedTask?.tasksTitles){
+    if (isList(selectedTask) && selectedTask?.tasksCounter && selectedTask?.tasksStatus && selectedTask?.tasksTitles){
     for (let i = 1; i <= selectedTask!.tasksCounter; i++) {
       items.push(
         <li key={i - 1} className="flex items-center gap-2">
@@ -71,98 +72,111 @@ export default function TaskMenu() {
   function HandleVisual() {
     // condicionais usando selectedTask.scheduleDate apenas para verificar se foi passada uma note ao invés de uma task
     // porque notes não possuem scheduleDate
-    if (selectedTask && !selectedTask.isCompleted) {
+    if (isTask(selectedTask) && !selectedTask.isCompleted) {
       return (
         <div className="w-full absolute bottom-8">
-          <div className="flex flex-row items-center">
-            {selectedTask.type == "task" && !selectedTask.inProgress && (
-              <button
-                className="flex items-center gap-2 mr-4 hover:scale-105"
-                onClick={() => {
-                  {
-                    selectedTask.inProgress = true;
-                    selectedTask.type = selectedTask.type;
-                    updateTask(selectedTask);
-                  }
-                }}
-              >
-                <Image
-                  width={40}
-                  height={40}
-                  src={inProgress}
-                  alt="In progress button"
-                />
-                Set to in progress
-              </button>
-            )}
-            {selectedTask.type == "task" && (
-              <input
-                className="w-[30px] h-[30px] mr-2 hover:scale-105"
-                type="checkbox"
-                name="checkbox"
-                checked={checkboxValue.current}
-                onChange={() => {
-                  checkboxValue.current = !checkboxValue.current;
-                  setOpenModal((prev) => !prev);
-                  setAction("Finished");
-                }}
-              />
-            )}
-            {selectedTask.type == "task" && (
-              <label htmlFor="checkbox">Mark as done</label>
-            )}
-            {["task", "note"].includes(selectedTask.type) && editorReadOnly && (
-              <button
-                onClick={
-                  selectedTask.type == "task"
-                    ? () => {
-                        setOpenModal(true);
-                        setAction("Edit");
-                      }
-                    : () =>
-                        selectedTask.type == "note"
-                          ? setEditorReadOnly(false)
-                          : null
-                }
-                className="flex items-center hover:scale-105"
-              >
-                <Image src={edit} className="mr-1 ml-4" alt="Edit Task" />
-                Edit {selectedTask.type}
-              </button>
-            )}
-            {["task", "note", "list"].includes(selectedTask.type) &&
-              editorReadOnly && (
+          <button
+            onClick={() => setOpenContextMenu((prev) => !prev)}
+            className="flex items-center lg:hidden bg-[#201335bb] text-white font-bold p-2 gap-3 rounded-lg justify-between"
+          >
+            <span>Actions </span>
+            <div className="h-7 border-l-2 border-white bg-white"></div>
+            <span className={`text-lg transition-all ease-in-out duration-300 ${openContextMenu ? "rotate-180" : "rotate-0"}`}>▼</span>
+          </button>
+          <div
+            className={`absolute bottom-12 md:bottom-0 lg:block bg-[#e4dede] lg:opacity-100 p-2 rounded-lg lg:bg-transparent transition-all ease-in-out duration-500 ${openContextMenu ? "block" : "opacity-0 transition-none"}`}
+          >
+            <div className="flex flex-col flex-wrap justify-center content-center gap-5 p-2 lg:flex-row">
+              {selectedTask.type == "task" && !selectedTask.inProgress && (
                 <button
+                  className="flex items-center gap-2 hover:scale-105"
                   onClick={() => {
-                    setOpenModal(true);
-                    setAction("Delete");
+                    {
+                      selectedTask.inProgress = true;
+                      selectedTask.type = selectedTask.type;
+                      updateTask(selectedTask);
+                    }
                   }}
-                  className="flex items-center hover:scale-105"
                 >
                   <Image
-                    src={deleteIcon}
-                    className="mr-3 ml-4"
-                    alt="Delete Task Button"
+                    width={40}
+                    height={40}
+                    src={inProgress}
+                    alt="In progress button"
                   />
-                  Delete {selectedTask.type}
+                  Set to in progress
                 </button>
               )}
-            {selectedTask.type == "task" && (
-              <button
-                className="flex items-center hover:scale-105"
-                onClick={() => setOpenPomodoro(true)}
-              >
-                <Image
-                  className="mr-2 ml-4"
-                  src={timer}
-                  alt="Pomodoro button"
-                />
-                Start pomodoro
-              </button>
-            )}
-            {!editorReadOnly && (
-              <button className="w-full h-10 bg-[#FF5C5C] text-white font-bold rounded-lg" onClick={() => {selectedTask.description = userFormattedTextInput.current; updateNote(selectedTask)}}>Save changes</button>
-            )}
+              {selectedTask.type == "task" && (
+                <div className="flex items-center gap-2">
+                  <input
+                    className="w-[30px] h-[30px] hover:scale-105 accent-[#201335bb]"
+                    id="checkbox"
+                    type="checkbox"
+                    checked={checkboxValue.current}
+                    onChange={() => {
+                      checkboxValue.current = !checkboxValue.current;
+                      setOpenModal((prev) => !prev);
+                      setAction("Finished");
+                    }}
+                  />
+                  <label htmlFor="checkbox">Mark as done</label>
+                </div>
+              )}
+              {["task", "note"].includes(selectedTask.type) &&
+                editorReadOnly && (
+                  <button
+                    onClick={
+                      selectedTask.type == "task"
+                        ? () => {
+                            setOpenModal(true);
+                            setAction("Edit");
+                          }
+                        : () =>
+                            selectedTask.type == "note"
+                              ? setEditorReadOnly(false)
+                              : null
+                    }
+                    className="flex items-center hover:scale-105 gap-2"
+                  >
+                    <Image src={edit} alt="Edit Task" />
+                    Edit {selectedTask.type}
+                  </button>
+                )}
+              {["task", "note", "list"].includes(selectedTask.type) &&
+                editorReadOnly && (
+                  <button
+                    onClick={() => {
+                      setOpenModal(true);
+                      setAction("Delete");
+                    }}
+                    className="flex items-center hover:scale-105 gap-2"
+                  >
+                    <Image src={deleteIcon} alt="Delete Task Button" />
+                    Delete {selectedTask.type}
+                  </button>
+                )}
+              {selectedTask.type == "task" && (
+                <button
+                  className="flex items-center hover:scale-105 gap-2"
+                  onClick={() => setOpenPomodoro(true)}
+                >
+                  <Image src={timer} alt="Pomodoro button" />
+                  Start pomodoro
+                </button>
+              )}
+              {!editorReadOnly && (
+                <button
+                  className="w-full h-10 bg-[#FF5C5C] text-white font-bold rounded-lg"
+                  onClick={() => {
+                    selectedTask.description = userFormattedTextInput.current;
+                    updateNote(selectedTask);
+                  }}
+                >
+                  Save changes
+                </button>
+              )}
+            </div>
           </div>
         </div>
       );
@@ -180,7 +194,7 @@ export default function TaskMenu() {
           className="mr-3 ml-4"
           alt="Delete Task Button"
         />
-        Delete Task
+        Delete {isTask(selectedTask) ? "task" : isNote(selectedTask) ? "note" : "list"}
       </button>
     );
   }
@@ -188,48 +202,47 @@ export default function TaskMenu() {
     <div className="relative w-full h-full bg-[#F3EDED] py-[14px] px-3 shadow-lg shadow-gray-500/50 rounded-2xl">
       <div
         className={
-          selectedTask.type != "note"
-            ? "flex items-center justify-between gap-[23px]"
+          !isNote(selectedTask)
+            ? "flex flex-wrap items-center justify-between md:gap-[23px]"
             : "flex flex-col items-center"
         }
       >
         <h2
           className={
-            selectedTask.type == "note"
+            isNote(selectedTask)
               ? "text-center font-bold text-2xl mx-auto"
               : "font-bold text-2xl"
           }
-          dangerouslySetInnerHTML={{ __html: selectedTask.title }}
+          dangerouslySetInnerHTML={(isTask(selectedTask) || isNote(selectedTask) || isList(selectedTask)) ? { __html: selectedTask.title } : { __html: "Unknown" }}
         ></h2>
         <div className="flex gap-3">
-          {selectedTask.createdAt && (
-            <span>
+          {isTask(selectedTask) || isNote(selectedTask) && selectedTask.createdAt && (
+            <span className="text-sm opacity-60">
               Created at:{" "}
               <span className="font-bold">{selectedTask.createdAt}</span>
             </span>
           )}
-          {selectedTask.scheduleDate && (
-            <p>
+          {isTask(selectedTask) && selectedTask.scheduleDate && (
+            <span className="text-sm opacity-60">
               Scheduled To:{" "}
               {selectedTask.scheduleDate ? (
                 <b>{selectedTask.scheduleDate}</b>
               ) : (
                 <b>Not scheduled</b>
               )}
-            </p>
+            </span>
           )}
         </div>
       </div>
         <div>
-          {selectedTask.type == "note" && <div className="w-full h-auto">
+          {isNote(selectedTask) &&
             <TextFormatter
               inputText={userFormattedTextInput}
               text={selectedTask.description}
               readOnly={editorReadOnly}
             />
-          </div>
           }
-          {selectedTask.type == "task" && <textarea
+          {isTask(selectedTask) && <textarea
             name="description"
             value={selectedTask.description}
             className="w-full h-full bg-transparent mt-6 focus:outline-none"
@@ -237,10 +250,10 @@ export default function TaskMenu() {
           />
           }
         </div>
-      {selectedTask.type == "list" && selectedTask.tasksStatus && (
+      {isList(selectedTask) && selectedTask.tasksStatus && (
         <ul className="flex flex-col gap-2 my-4 mx-5">{handleLists()}</ul>
       )}
-      {selectedTask.type == "list" && (
+      {isList(selectedTask) && (
         <div className="flex items-center gap-1 mx-4">
           <label className="italic opacity-50">
             {calculateCompletedListPercentage()}%
@@ -267,7 +280,7 @@ export default function TaskMenu() {
         minutes={25}
         openModal={openPomodoro}
         setOpenModal={setOpenPomodoro}
-        content={selectedTask}
+        content={selectedTask as taskTypes}
       />
     </div>
   );
