@@ -103,7 +103,7 @@ export default class CustomToolbarEditor extends Component<
 
   render() {
     return (
-      <div className="h-full relative">
+      <div className="relative flex-1">
         {!this.props.readOnly && (
           <Toolbar>
             {(externalProps) => (
@@ -249,6 +249,8 @@ export default class CustomToolbarEditor extends Component<
           style={{
             cursor: "text",
             padding: "0 1rem",
+            height: "100%",
+            flex: 1
           }}
         >
           <Editor
@@ -264,10 +266,10 @@ export default class CustomToolbarEditor extends Component<
             }}
           />
         </div>
-        <span className="absolute bottom-5 right-3 text-base text-gray-500">
+        {this.editor?.state.readOnly && <span className="absolute bottom-5 right-3 text-base text-gray-500">
           {this.state.editorState.getCurrentContent().getPlainText().length} /{" "}
           {500}
-        </span>
+        </span>}
       </div>
     );
   }

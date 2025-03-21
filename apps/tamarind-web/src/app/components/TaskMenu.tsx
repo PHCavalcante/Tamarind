@@ -187,7 +187,7 @@ export default function TaskMenu() {
           setOpenModal(true);
           setAction("Delete");
         }}
-        className="flex items-center hover:scale-105 absolute bottom-8 "
+        className={`flex items-center hover:scale-105 ${isNote(selectedTask) ? "" : "absolute bottom-12"}`}
       >
         <Image
           src={deleteIcon}
@@ -199,7 +199,7 @@ export default function TaskMenu() {
     );
   }
   return (
-    <div className="relative w-full h-full bg-[#F3EDED] py-[14px] px-3 shadow-lg shadow-gray-500/50 rounded-2xl">
+    <div className="relative flex flex-col w-full h-full max-h-full bg-[#F3EDED] py-[14px] px-3 shadow-lg shadow-gray-500/50 rounded-2xl overflow-x-hidden overflow-auto">
       <div
         className={
           !isNote(selectedTask)
@@ -213,15 +213,20 @@ export default function TaskMenu() {
               ? "text-center font-bold text-2xl mx-auto"
               : "font-bold text-2xl"
           }
-          dangerouslySetInnerHTML={(isTask(selectedTask) || isNote(selectedTask) || isList(selectedTask)) ? { __html: selectedTask.title } : { __html: "Unknown" }}
+          dangerouslySetInnerHTML={
+            isTask(selectedTask) || isNote(selectedTask) || isList(selectedTask)
+              ? { __html: selectedTask.title }
+              : { __html: "Unknown" }
+          }
         ></h2>
         <div className="flex gap-3">
-          {isTask(selectedTask) || isNote(selectedTask) && selectedTask.createdAt && (
-            <span className="text-sm opacity-60">
-              Created at:{" "}
-              <span className="font-bold">{selectedTask.createdAt}</span>
-            </span>
-          )}
+          {isTask(selectedTask) ||
+            (isNote(selectedTask) && selectedTask.createdAt && (
+              <span className="text-sm opacity-60">
+                Created at:{" "}
+                <span className="font-bold">{selectedTask.createdAt}</span>
+              </span>
+            ))}
           {isTask(selectedTask) && selectedTask.scheduleDate && (
             <span className="text-sm opacity-60">
               Scheduled To:{" "}
@@ -234,22 +239,21 @@ export default function TaskMenu() {
           )}
         </div>
       </div>
-        <div>
-          {isNote(selectedTask) &&
-            <TextFormatter
-              inputText={userFormattedTextInput}
-              text={selectedTask.description}
-              readOnly={editorReadOnly}
-            />
-          }
-          {isTask(selectedTask) && <textarea
+        {isNote(selectedTask) && (
+          <TextFormatter
+            inputText={userFormattedTextInput}
+            text={selectedTask.description}
+            readOnly={editorReadOnly}
+          />
+        )}
+        {isTask(selectedTask) && (
+          <textarea
             name="description"
             value={selectedTask.description}
-            className="w-full h-full bg-transparent mt-6 focus:outline-none"
+            className="w-full bg-transparent mt-6 focus:outline-none"
             readOnly
           />
-          }
-        </div>
+        )}
       {isList(selectedTask) && selectedTask.tasksStatus && (
         <ul className="flex flex-col gap-2 my-4 mx-5">{handleLists()}</ul>
       )}
