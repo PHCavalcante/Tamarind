@@ -43,19 +43,19 @@ export default function Menu() {
         if (!user) return;
         if (data.length == 0) {
           const response = await axios.get(
-            `https://tamarind-api.onrender.com/tasks/${user.id}`
+            `http://localhost:3000/tasks/${user.id}`
           );
           setData(response.data);
         }
         if (notes.length == 0) {
           const response = await axios.get(
-            `https://tamarind-api.onrender.com/notes/${user.id}`
+            `http://localhost:3000/notes/${user.id}`
           );
           setNotes(response.data);
         }
         if (lists.length == 0) {
           const response = await axios.get(
-            `https://tamarind-api.onrender.com/lists/${user.id}`
+            `http://localhost:3000/lists/${user.id}`
           );
           setLists(response.data);
         }
