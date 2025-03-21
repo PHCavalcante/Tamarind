@@ -36,24 +36,23 @@ export default function Menu() {
     notes: true,
   });
   const {openSnackbar} = UseSnackbarContext();
-
   useEffect(() => {
     const fetchTasks = async () => {
       try {
         if (!user) return;
-        if (data.length == 0) {
+        if (data.length == 0 || openSnackbar) {
           const response = await axios.get(
             `https://tamarind-api.onrender.com/tasks/${user.id}`
           );
           setData(response.data);
         }
-        if (notes.length == 0) {
+        if (notes.length == 0 || openSnackbar) {
           const response = await axios.get(
             `https://tamarind-api.onrender.com/notes/${user.id}`
           );
           setNotes(response.data);
         }
-        if (lists.length == 0) {
+        if (lists.length == 0 || openSnackbar) {
           const response = await axios.get(
             `https://tamarind-api.onrender.com/lists/${user.id}`
           );
@@ -65,7 +64,6 @@ export default function Menu() {
     };
     fetchTasks();
   },[user, openSnackbar]);
-
   const parseTasks = () => {
     const notCompletedTasks = data.filter((task:taskTypes) => task.isCompleted == false && task.inProgress == false);
     if (notCompletedTasks.length == 0) {
