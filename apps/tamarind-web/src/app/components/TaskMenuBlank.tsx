@@ -1,5 +1,6 @@
 import GetUserData from "@/utils/GetUserData";
 import { UseTaskContext } from "@/hooks/taskContext";
+import { UseSnackbarContext } from "@/hooks/snackbarContext"
 import { useState, useEffect, useRef } from "react";
 import TextFormatter from "./TextFormatter";
 import Image from "next/image";
@@ -36,6 +37,7 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
     description: "",
     createdAt: "",
   });
+  const { setOpenSnackbar, setSnackbarMessage } = UseSnackbarContext();
   const emoji = useRef("");
   const userFormattedTextInput = useRef("");
   const { selectedTask, setSelectedTask } = UseTaskContext();
@@ -288,6 +290,8 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
                 list.current.tasksStatus = isChecked;
                 postList(list.current);
                 setSelectedTask(null);
+                setSnackbarMessage("List");
+                setOpenSnackbar(true);
               }
             : () => {
                 const prev = details.title;
@@ -295,6 +299,9 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
                 details.createdAt = createdAt;
                 details.description = userFormattedTextInput.current;
                 postNote(details);
+                setSelectedTask(null);
+                setSnackbarMessage("Note");
+                setOpenSnackbar(true);
               }
         }
       >
