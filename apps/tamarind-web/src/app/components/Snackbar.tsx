@@ -8,6 +8,8 @@ type responseTypes = {
   Finished: string;
   Add: string;
   Update: string;
+  Note: string;
+  List: string;
   UpdateNote: string;
   UpdateList: string;
   DeleteList: string;
@@ -23,6 +25,8 @@ export default function Snackbar() {
       Finished: "Task completed successfully!",
       Add: "Task successfully added!",
       Update: "Task successfully updated!",
+      Note: "Note added successfully!",
+      List: "List added successfully!",
       UpdateNote: "Note updated successfully!",
       UpdateList: "List updated successfully!",
       DeleteList: "List deleted successfully!",
