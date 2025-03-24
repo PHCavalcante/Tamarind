@@ -22,6 +22,9 @@ const routes = (app) => {
     app.get("/lists/:userId", listLists);
     app.put("/lists/:id", editList)
     app.delete("/lists/:listID", removeList);
+    app.get("/ping", (req, res) => {
+      res.status(200).send("pong");
+    })
     // app.post("/register", postNewAccount);
 }
 
