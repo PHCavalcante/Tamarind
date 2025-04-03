@@ -187,7 +187,7 @@ export default function TaskMenu() {
           setOpenModal(true);
           setAction("Delete");
         }}
-        className={`flex items-center hover:scale-105 ${isNote(selectedTask) ? "" : "absolute bottom-12"}`}
+        className={`flex items-center ${isNote(selectedTask) ? "" : "absolute bottom-12"}`}
       >
         <Image
           src={deleteIcon}
