@@ -100,6 +100,7 @@ export default function Modal({
                       isTask(selectedTask) &&
                       selectedTask.isCompleted
                     ? () => {
+                        deleteTask(selectedTask._id!);
                         setOpenModal(false);
                         setSelectedTask(null);
                         setOpenSnackbar(true);
