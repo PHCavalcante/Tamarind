@@ -15,7 +15,7 @@ import { combination, listTypes, noteTypes, taskTypes } from "@/types/dataTypes"
 import arrowRight from "../../assets/arrowRight.svg";
 import kanban from "../../assets/kanban.svg";
 import search from "../../assets/search.svg";
-import logo from "../../assets/logo.svg";
+import logo from "../../app/favicon.ico";
 
 export default function Menu() {
   const [isOpen, setIsOpen] = useState(true);
@@ -185,10 +185,8 @@ export default function Menu() {
         );
       }
     );
-      // console.log(searchData);
       setSearchItems(searchData);
   }
-
   return (
     <div
       className={
@@ -209,7 +207,7 @@ export default function Menu() {
             src={logo}
             alt="logo image"
             width={45}
-            className="pb-2 max-w-full max-h-full overflow-hidden"
+            className="pb-2 max-w-full max-h-full overflow-hidden scale-110"
           />
           <h1 className={isOpen ? "text-2xl font-semibold" : "opacity-0 w-0 h-0"}>
             Tamarind
