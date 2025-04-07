@@ -13,16 +13,16 @@ export default function Kanban() {
   // const { tasksData, fetchData } = useStore();
   const [tasksData, setTasksData] = useState<taskTypes[]>([]);
   const { setSelectedTask } = UseTaskContext();
-  const taskGrabed = useRef<taskTypes>(null);
+  const taskGrabed = useRef<taskTypes & { column: string}>(null);
   const user = GetUserData();
-  const {openSnackbar} = UseSnackbarContext();
+  const { } = UseSnackbarContext();
 
   useEffect(() => {
     if(!user) return;
     const fetchData = async () => {
       try{
         const response = await axios.get(
-          `https://tamarind-api.onrender.com/tasks/${user.id}`
+          `http://localhost:3000/tasks/${user.id}`
         );
         const data = response.data;
         setTasksData(data);
@@ -32,50 +32,47 @@ export default function Kanban() {
       }
     }
     fetchData();
-  },[user, openSnackbar])
+  },[user]);
 
   function drag(ev:DragEvent) {
     ev.dataTransfer?.setData("text", (ev.target as HTMLElement).id);
-    // console.log(`elemento arrastado: ${(ev.currentTarget! as HTMLElement).id}`);
   }
 
   function drop(ev: DragEvent<HTMLElement>) {
     ev.preventDefault();
-    const target = ev.currentTarget;
-    console.log(`alvo do drop: ${target.id}`);
-
+    if (!taskGrabed.current) return;
+    const target = ev.currentTarget as HTMLElement;
     if (ev.dataTransfer){
       const data = ev.dataTransfer.getData("text");
-      console.log(`data recebido: ${data}`);
-
+      if (document.getElementById(data)?.tagName == "LI" && target.id === taskGrabed.current!.column) return;
       const draggedElement = document.getElementById(data);
       if (draggedElement){
         target.appendChild(draggedElement);
-      }else {
-        console.log(`elemento com id ${data} não encontrado no dom`)
       }
     }
     if (target.id == "todo"){
         taskGrabed.current!.inProgress = false;
         taskGrabed.current!.isCompleted = false;
-        console.log(taskGrabed);
-        updateTask(taskGrabed.current!)
+        taskGrabed.current!.column = "todo";
+        updateTask(taskGrabed.current!);
+        // setJustAAction?.(true);
     } else if (target.id == "inProgress"){
         taskGrabed.current!.inProgress = true;
-        console.log(taskGrabed);
         updateTask(taskGrabed.current!);
+        taskGrabed.current!.column = "inProgress";
+        // setJustAAction?.(true);
     } else if (target.id == "done"){
         taskGrabed.current!.inProgress = false;
         taskGrabed.current!.isCompleted = true;
-        console.log(taskGrabed);
         updateTask(taskGrabed.current!);
+        taskGrabed.current!.column = "done";
+        // setJustAAction?.(true);
     } else return;
   }
 
   function parseData(taskStatus: "todo" | "inProgress" | "done") {
-    return (tasksData &&
-      tasksData
-        .filter(
+    if (tasksData.length > 0) {
+      return (tasksData.filter(
           (task: taskTypes) =>
             taskStatus == "todo" ?
             task.isCompleted == false && task.inProgress == false
@@ -93,17 +90,21 @@ export default function Kanban() {
             inProgress: task.inProgress,
             type: task.type,
             scheduleDate: task.scheduleDate,
+            column: taskStatus == "todo" ? "todo" : taskStatus == "inProgress" ? "inProgress" : "done",
           };
           return (
             <li
               id={processedTask._id}
               className="w-full flex flex-col bg-[#e4dede] rounded p-2 cursor-pointer shadow-md hover:bg-[#d3cdcd]"
               key={processedTask._id}
+              data-column={taskStatus}
               onClick={() => setSelectedTask(processedTask)}
               draggable
               onDragStart={(event) => {
                 drag(event);
                 taskGrabed.current = processedTask;
+                event.dataTransfer.setData("text/plain", event.currentTarget.id);
+                event.dataTransfer.effectAllowed = "move";
               }}
             >
               <span className="font-semibold text-lg">
@@ -118,6 +119,13 @@ export default function Kanban() {
             </li>
           );
         }));
+      }else {
+        return (
+          <span className="font-semibold text-lg m-auto text-gray-400 text-center">
+            No tasks to display<br />Try adding some tasks!
+          </span>
+        );
+      }
   }
 
   return (
@@ -133,8 +141,11 @@ export default function Kanban() {
             className="flex flex-col w-full h-full gap-4 p-3"
             onDrop={(event) => drop(event)}
             onDragOver={(event) => {
+              const target = event.currentTarget as HTMLElement;
+              if (!taskGrabed.current) return;
+              if (target.id === taskGrabed.current.column) return;
               event.preventDefault();
-              document.getElementById("todo")!.style.scale = "1.05";
+              document.getElementById(target.id)!.style.scale = "1.02";
             }}
             onDragLeave={(event) => {
               event.preventDefault();
@@ -158,8 +169,11 @@ export default function Kanban() {
             className="flex flex-col w-full h-full gap-4 p-3"
             onDrop={(event) => drop(event)}
             onDragOver={(event) => {
+              const target = event.currentTarget;
+              if (!taskGrabed.current) return;
+              if (target.id === taskGrabed.current.column) return;
               event.preventDefault();
-              document.getElementById("inProgress")!.style.scale = "1.05";
+              document.getElementById(target.id)!.style.scale = "1.02";
             }}
             onDragLeave={(event) => {
               event.preventDefault();
@@ -183,8 +197,11 @@ export default function Kanban() {
             className="flex flex-col w-full h-full gap-4 p-3"
             onDrop={(event) => drop(event)}
             onDragOver={(event) => {
+              const target = event.currentTarget as HTMLElement;
+              if (!taskGrabed.current) return;
+              if (target.id === taskGrabed.current.column) return;
               event.preventDefault();
-              document.getElementById("done")!.style.scale = "1.05";
+              document.getElementById(target.id)!.style.scale = "1.02";
             }}
             onDragLeave={(event) => {
               event.preventDefault();
