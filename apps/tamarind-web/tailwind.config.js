@@ -33,12 +33,23 @@ module.exports = {
         "0%": { transform: "translateY(0)", opacity: "1" },
         "100%": { transform: "translateY(-10px)", opacity: "0" },
       },
+      bounce: {
+          "0%, 100%": {
+              transform: "translateY(-25%)",
+              "nimation-timing-function" : "cubic-bezier(0.8, 0, 1, 1)"
+            },
+          "50%": {
+            transform: "none",
+            "animation-timing-function": "cubic-bezier(0, 0, 0.2, 1)"
+          },
+      },
     },
     animation: {
       typing: "typing 1s steps(20) alternate",
       spin: "spin 1s linear infinite",
       snackBarIn: "fadeIn 0.4s ease-in-out forwards",
       snackBarOut: "fadeOut 0.4s ease-in-out 2.7s forwards",
+      bounce: "bounce 0.5s infinite",
     },
   },
   plugins: [],
