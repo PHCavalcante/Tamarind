@@ -22,7 +22,7 @@ export default function Kanban() {
     const fetchData = async () => {
       try{
         const response = await axios.get(
-          `http://localhost:3000/tasks/${user.id}`
+          `https://tamarind-api.onrender.com/tasks/${user.id}`
         );
         const data = response.data;
         setTasksData(data);
