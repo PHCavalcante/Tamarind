@@ -17,21 +17,49 @@ export default function Pomodoro({
 }: PomodoroProps) {
   const [time, setTime] = useState(minutes * 60);
   const [start, setStart] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
+  
+  if (Notification.permission !== "granted") {
+    Notification.requestPermission();
+  }
+  function showNotification(title: string, body: string) {
+    if (Notification.permission === "granted") {
+      new Notification(title, {
+        body: body,
+        icon: "../icon.png",
+      });
+    }
+  }
+  
   useEffect(() => {
     if (start){
     const interval = setInterval(() => {
-      setTime((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
+      setTime((prevTime) => (prevTime > 0 ? prevTime - 1 : 5 * 60));
     }, 1000);
     return () => clearInterval(interval);
   }
   }, [start]);
-
+  useEffect(() => {
+    if (time === 0) {
+      setIsCompleted(true);
+      setTimeout(() => {
+        setIsCompleted(false);
+        setTime(minutes * 60);
+      }, 25000);
+    }
+  }, [time, minutes]);
   const formatTime = () => {
     const minutes = Math.floor(time / 60);
     const seconds = time % 60;
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
-
+  useEffect(() => {
+    if (isCompleted) {
+      if (document.visibilityState === "hidden") {
+        showNotification("🍅 Pomodoro Timer", "Take a break!");
+      }
+    }
+  }, [isCompleted]);
   return (
     <div
       className={
@@ -43,6 +71,7 @@ export default function Pomodoro({
       }
     >
       <div className="flex flex-col items-center gap-7 ease-in duration-700 animate-modal">
+        {isCompleted == true && <span className="text-3xl font-semibold text-white animate-bounce">Take a break!</span>}
         <div className="bg-white p-8 w-fit rounded-full border-8 m-auto">
           <span className="text-7xl" id="timer">
             {formatTime()}
@@ -62,7 +91,6 @@ export default function Pomodoro({
               className="bg-gray-300 p-2 rounded-lg font-bold"
               onClick={() => {
                 content.isCompleted = true;
-                console.log(content);
                 updateTask(content);
                 setOpenModal(false);
               }}
