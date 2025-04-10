@@ -67,7 +67,7 @@ export default function TaskMenu() {
    function calculateCompletedListPercentage() {
     if (!tasksStates) return;
     const completedTasksCount = tasksStates.filter((task) => task === true).length;
-    return (completedTasksCount / tasksStates.length) * 100;
+    return ((completedTasksCount / tasksStates.length) * 100).toFixed(0);
    }
   function HandleVisual() {
     // condicionais usando selectedTask.scheduleDate apenas para verificar se foi passada uma note ao invés de uma task
