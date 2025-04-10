@@ -47,7 +47,7 @@ export default function TaskMenu() {
               <input
                 type="checkbox"
                 checked={tasksStates[i - 1] || false}
-                className="w-5 h-5 peer mr-2 hover:cursor-pointer"
+                className="w-5 h-5 peer mr-2 hover:cursor-pointer accent-[var(--accent)]"
                 onChange={() => handleCheckboxChange(i - 1)}
               />
               <label
@@ -267,7 +267,7 @@ export default function TaskMenu() {
             role="progressbar"
           >
             <div
-              className="flex flex-col justify-center rounded-full overflow-hidden bg-blue-600 text-xs text-white text-center whitespace-nowrap transition duration-500 dark:bg-blue-500"
+              className="flex flex-col justify-center rounded-full overflow-hidden bg-blue-600 text-xs text-white text-center whitespace-nowrap transition duration-500 dark:bg-[var(--accent)]"
               style={{ width: `${calculateCompletedListPercentage()}%` }}
             ></div>
           </div>

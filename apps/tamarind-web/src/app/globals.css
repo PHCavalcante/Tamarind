@@ -5,6 +5,7 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --accent: #201335bb;
 }
 @font-face{
   src: url("../fonts/Nunito-VariableFont_wght.ttf") format("truetype");
@@ -14,7 +15,6 @@ html,
 body {
   width: 100%;
   font-family: "Nunito";
-  font-size: large;
   overflow: hidden;
   font-size: 1rem;
 }
