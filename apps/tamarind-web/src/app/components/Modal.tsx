@@ -75,7 +75,7 @@ export default function Modal({
           </p>
           <div className="flex justify-between mt-3 w-full">
             <button
-              className="text-black w-24 py-2 px-2 rounded-lg mx-auto font-bold hover:scale-105"
+              className="w-24 py-2 px-2 rounded-lg mx-auto font-bold hover:scale-105"
               onClick={() => {
                 checkboxValue!.current = false;
                 setOpenModal(false);
@@ -139,7 +139,7 @@ export default function Modal({
       return (
         <form className="flex flex-col gap-5">
           <input
-            className="bg-white h-10 rounded-lg px-2"
+            className="bg-white dark:bg-[var(--darkPaper)] h-10 rounded-lg px-2"
             required
             type="text"
             placeholder={
@@ -153,7 +153,7 @@ export default function Modal({
             onChange={(e) => (formValues.current.title = e.target.value)}
           />
           <textarea
-            className="bg-white min-h-40 rounded-lg p-2 max-h-[200px]"
+            className="bg-white dark:bg-[var(--darkPaper)] min-h-40 rounded-lg p-2 max-h-[200px]"
             maxLength={500}
             placeholder={
               action == "Edit"
@@ -182,7 +182,7 @@ export default function Modal({
               <div className="flex items-center gap-3">
                 <label>Schedule Time</label>
                 <input
-                  className="bg-white max-w-fit h-10 rounded-lg px-2"
+                  className="bg-white max-w-fit h-10 rounded-lg px-2 dark:bg-[var(--darkForeground)]"
                   type="datetime-local"
                   required
                   min={createdAt}
@@ -259,7 +259,7 @@ export default function Modal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`flex flex-col max-h-full bg-[#F3EDED] min-w-fit ${action == "Delete" || action == "Finished" ? "w-fit" : "max-w-[50%]"} mx-auto rounded-xl py-5 px-5 transform transition-all duration-300 animate-modal`}
+        className={`flex flex-col max-h-full bg-[var(--background)] dark:bg-[var(--darkBackground)] min-w-fit ${action == "Delete" || action == "Finished" ? "w-fit" : "max-w-[50%]"} mx-auto rounded-xl py-5 px-5 transform transition-all duration-300 animate-modal`}
       >
         <div className="flex justify-between mb-5">
           <h2 className="font-bold text-2xl mx-auto">

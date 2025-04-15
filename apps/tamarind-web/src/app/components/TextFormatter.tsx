@@ -4,6 +4,7 @@ import {
   RichUtils,
   convertToRaw,
   convertFromRaw,
+  ContentBlock,
 } from "draft-js";
 import Editor from "@draft-js-plugins/editor";
 import createToolbarPlugin from "@draft-js-plugins/static-toolbar";
@@ -82,7 +83,6 @@ export default class CustomToolbarEditor extends Component<
       null,
       2
     );
-    // console.log(this.props.inputText.current);
   };
 
   focus = () => {
@@ -93,21 +93,48 @@ export default class CustomToolbarEditor extends Component<
     this.onChange(RichUtils.toggleBlockType(this.state.editorState, blockType));
   };
   currentStyle = () => {
-    const currentStyle = Array.from(this.state.editorState.getCurrentInlineStyle().toArray());
-    // console.log(currentStyle?.map((x) => x[0]));
+    const currentStyle = Array.from(
+      this.state.editorState.getCurrentInlineStyle().toArray()
+    );
     return currentStyle;
-  }
+  };
   toggleInlineStyle = (style: string): void => {
-    this.setState({ editorState: RichUtils.toggleInlineStyle(this.state.editorState, style) });
+    this.setState({
+      editorState: RichUtils.toggleInlineStyle(this.state.editorState, style),
+    });
+  };
+  getCurrentBlockType = () => {
+    const selection = this.state.editorState.getSelection();
+    const content = this.state.editorState.getCurrentContent();
+    return content.getBlockForKey(selection.getStartKey()).getType();
+  };
+  blockStyleFn = (block: ContentBlock): string => {
+    const type = block.getType();
+    switch (type) {
+      case "header-one":
+        return "custom-header-one";
+      case "header-two":
+        return "custom-header-two";
+      case "header-three":
+        return "custom-header-three";
+      case "blockquote":
+        return "custom-blockquote";
+      default:
+        return "";
+    }
   };
 
   render() {
+    const currentStyle = this.currentStyle();
+    // const currentBlockType = this.getCurrentBlockType();
+    // console.log(this.currentStyle());
     return (
       <div className="relative flex-1">
         {!this.props.readOnly && (
           <Toolbar>
             {(externalProps) => (
-              <div className="flex flex-wrap items-center content-center my-3 gap-2 opacity-80">
+              <div className="flex flex-wrap items-center content-center my-3 gap-2 opacity-80 dark:invert">
+                {/* Inline buttons */}
                 <BoldButton
                   {...externalProps}
                   buttonProps={{
@@ -115,7 +142,7 @@ export default class CustomToolbarEditor extends Component<
                       e.preventDefault();
                       this.toggleInlineStyle("BOLD");
                     },
-                    id: this.currentStyle()?.includes("BOLD")
+                    id: currentStyle.includes("BOLD")
                       ? "toolbar-active-button"
                       : "toolbar-button",
                   }}
@@ -127,7 +154,7 @@ export default class CustomToolbarEditor extends Component<
                       e.preventDefault();
                       this.toggleInlineStyle("ITALIC");
                     },
-                    id: this.currentStyle()?.includes("ITALIC")
+                    id: currentStyle.includes("ITALIC")
                       ? "toolbar-active-button"
                       : "toolbar-button",
                   }}
@@ -139,7 +166,7 @@ export default class CustomToolbarEditor extends Component<
                       e.preventDefault();
                       this.toggleInlineStyle("UNDERLINE");
                     },
-                    id: this.currentStyle()?.includes("UNDERLINE")
+                    id: currentStyle.includes("UNDERLINE")
                       ? "toolbar-active-button"
                       : "toolbar-button",
                   }}
@@ -151,19 +178,22 @@ export default class CustomToolbarEditor extends Component<
                       e.preventDefault();
                       this.toggleInlineStyle("CODE");
                     },
-                    id: this.currentStyle()?.includes("CODE")
+                    id: currentStyle.includes("CODE")
                       ? "toolbar-active-button"
                       : "toolbar-button",
                   }}
                 />
+
+                {/* Block buttons */}
                 <HeadlineOneButton
                   {...externalProps}
                   buttonProps={{
                     onClick: (e) => {
                       e.preventDefault();
+                      this.handleBlockType("header-one");
                       this.toggleInlineStyle("header-one");
                     },
-                    id: this.currentStyle()?.includes("header-one")
+                    className: this.getCurrentBlockType() === "header-one"
                       ? "toolbar-active-button"
                       : "toolbar-button",
                   }}
@@ -173,9 +203,10 @@ export default class CustomToolbarEditor extends Component<
                   buttonProps={{
                     onClick: (e) => {
                       e.preventDefault();
-                      this.toggleInlineStyle("header-two");
+                      this.handleBlockType("header-two");
+                       this.toggleInlineStyle("header-two");
                     },
-                    id: this.currentStyle()?.includes("header-two")
+                    className: this.getCurrentBlockType() === "header-one"
                       ? "toolbar-active-button"
                       : "toolbar-button",
                   }}
@@ -185,9 +216,10 @@ export default class CustomToolbarEditor extends Component<
                   buttonProps={{
                     onClick: (e) => {
                       e.preventDefault();
-                      this.toggleInlineStyle("header-three");
+                      this.handleBlockType("header-three");
+                       this.toggleInlineStyle("header-three");
                     },
-                    id: this.currentStyle()?.includes("header-three")
+                    className: this.getCurrentBlockType() === "header-one"
                       ? "toolbar-active-button"
                       : "toolbar-button",
                   }}
@@ -197,11 +229,11 @@ export default class CustomToolbarEditor extends Component<
                   buttonProps={{
                     onClick: (e) => {
                       e.preventDefault();
-                      this.toggleInlineStyle("unordered-list-item");
+                      this.handleBlockType("unordered-list-item");
                     },
-                    id: this.currentStyle()?.includes("unordered-list-item")
-                      ? "toolbar-active-button"
-                      : "toolbar-button",
+                    className: this.getCurrentBlockType() === "unordered-list-item"
+                        ? "toolbar-active-button"
+                        : "toolbar-button",
                   }}
                 />
                 <OrderedListButton
@@ -209,11 +241,12 @@ export default class CustomToolbarEditor extends Component<
                   buttonProps={{
                     onClick: (e) => {
                       e.preventDefault();
-                      this.toggleInlineStyle("ordered-list-item");
+                      this.handleBlockType("ordered-list-item");
                     },
-                    id: this.currentStyle()?.includes("ordered-list-item")
-                      ? "toolbar-active-button"
-                      : "toolbar-button",
+                    className:
+                      this.getCurrentBlockType() === "ordered-list-item"
+                        ? "toolbar-active-button"
+                        : "toolbar-button",
                   }}
                 />
                 <BlockquoteButton
@@ -221,11 +254,12 @@ export default class CustomToolbarEditor extends Component<
                   buttonProps={{
                     onClick: (e) => {
                       e.preventDefault();
-                      this.toggleInlineStyle("blockquote");
+                      this.handleBlockType("blockquote");
                     },
-                    id: this.currentStyle()?.includes("blockquote")
-                      ? "toolbar-active-button"
-                      : "toolbar-button",
+                    className:
+                      this.getCurrentBlockType() === "blockquote"
+                        ? "toolbar-active-button"
+                        : "toolbar-button",
                   }}
                 />
                 <CodeBlockButton
@@ -233,24 +267,26 @@ export default class CustomToolbarEditor extends Component<
                   buttonProps={{
                     onClick: (e) => {
                       e.preventDefault();
-                      this.toggleInlineStyle("code-block");
+                      this.handleBlockType("code-block");
                     },
-                    id: this.currentStyle()?.includes("code-block")
-                      ? "toolbar-active-button"
-                      : "toolbar-button",
+                    className:
+                      this.getCurrentBlockType() === "code-block"
+                        ? "toolbar-active-button"
+                        : "toolbar-button",
                   }}
                 />
               </div>
             )}
           </Toolbar>
         )}
+
         <div
           onClick={this.focus}
           style={{
             cursor: "text",
             padding: "0 1rem",
             height: "100%",
-            flex: 1
+            flex: 1,
           }}
         >
           <Editor
@@ -264,12 +300,16 @@ export default class CustomToolbarEditor extends Component<
             ref={(element) => {
               this.editor = element;
             }}
+            blockStyleFn={this.blockStyleFn}
           />
         </div>
-        {this.editor?.state.readOnly && <span className="absolute bottom-5 right-3 text-base text-gray-500">
-          {this.state.editorState.getCurrentContent().getPlainText().length} /{" "}
-          {500}
-        </span>}
+
+        {this.editor?.state.readOnly && (
+          <span className="absolute bottom-5 right-3 text-base text-gray-500">
+            {this.state.editorState.getCurrentContent().getPlainText().length} /
+            500
+          </span>
+        )}
       </div>
     );
   }
