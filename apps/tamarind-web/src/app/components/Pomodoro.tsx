@@ -71,8 +71,12 @@ export default function Pomodoro({
       }
     >
       <div className="flex flex-col items-center gap-7 ease-in duration-700 animate-modal">
-        {isCompleted == true && <span className="text-3xl font-semibold text-white animate-bounce">Take a break!</span>}
-        <div className="bg-white p-8 w-fit rounded-full border-8 m-auto">
+        {isCompleted == true && (
+          <span className="text-3xl font-semibold  animate-bounce">
+            Take a break!
+          </span>
+        )}
+        <div className="bg-white dark:bg-[var(--darkForeground)] p-8 w-fit rounded-full border-8 dark:border-[var(--accent)] m-auto">
           <span className="text-7xl" id="timer">
             {formatTime()}
           </span>
@@ -80,7 +84,7 @@ export default function Pomodoro({
         <div className="flex gap-4">
           {!start && (
             <button
-              className="bg-white p-2 rounded-lg border-4 border-slate-950"
+              className="bg-white hover:bg-[var(--paper)]  dark:bg-[var(--darkAccent)] dark:hover:bg-[var(--darkAccentHover)] transition-colors ease-in-out duration-300 p-2 rounded-lg"
               onClick={() => setStart(true)}
             >
               START
@@ -88,7 +92,7 @@ export default function Pomodoro({
           )}
           {start && (
             <button
-              className="bg-gray-300 p-2 rounded-lg font-bold"
+              className="bg-gray-300 hover:bg-[var(--paper)] dark:bg-[var(--darkAccent)] dark:hover:bg-[var(--darkAccentHover)] transition-colors ease-in-out duration-300 p-2 rounded-lg font-bold"
               onClick={() => {
                 content.isCompleted = true;
                 updateTask(content);
@@ -104,7 +108,7 @@ export default function Pomodoro({
             <input
               name="checkbox"
               type="checkbox"
-              className="w-[30px] h-[30px]"
+              className="w-[30px] h-[30px] accent-[var(--accent)] dark:accent-[--darkAccent] cursor-pointer"
             />
             <label
               htmlFor="checkbox"

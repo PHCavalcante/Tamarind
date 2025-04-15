@@ -95,7 +95,7 @@ export default function Kanban() {
           return (
             <li
               id={processedTask._id}
-              className="w-full flex flex-col bg-[#e4dede] rounded p-2 cursor-pointer shadow-md hover:bg-[#d3cdcd]"
+              className="w-full flex flex-col bg-[var(--paper)] hover:bg-[var(--hoverPaper)] dark:bg-[var(--darkPaper)] dark:text-[var(--darkText)] dark:hover:bg-[var(--darkPaperHover)] rounded p-2 cursor-pointer shadow-md"
               key={processedTask._id}
               data-column={taskStatus}
               onClick={() => setSelectedTask(processedTask)}
@@ -103,7 +103,10 @@ export default function Kanban() {
               onDragStart={(event) => {
                 drag(event);
                 taskGrabed.current = processedTask;
-                event.dataTransfer.setData("text/plain", event.currentTarget.id);
+                event.dataTransfer.setData(
+                  "text/plain",
+                  event.currentTarget.id
+                );
                 event.dataTransfer.effectAllowed = "move";
               }}
             >
@@ -129,11 +132,11 @@ export default function Kanban() {
   }
 
   return (
-    <div className="flex flex-col w-full h-full bg-[#F3EDED] py-[14px] px-3 shadow-lg shadow-gray-500/50 rounded-2xl">
+    <div className="flex flex-col w-full h-full bg-[var(--background)] dark:bg-[var(--darkBackground)] py-[14px] px-3 shadow-lg shadow-gray-500/50 rounded-2xl">
       {/* <h1 className="text-center text-3xl font-bold my-2">Kanban</h1> */}
       <div className="grid grid-flow-row grid-cols-1 h-full md:grid-cols-3 gap-4">
         <div
-          className="flex flex-col bg-[#FFF9F9] w-full h-full rounded-2xl items-center shadow-lg border-2 border-solid transition-all duration-300 ease-in-out border-gray-300 hover:shadow-xl hover:border-gray-400"
+          className="flex flex-col bg-[var(--foreground)] dark:bg-[var(--darkForeground)] w-full h-full rounded-2xl items-center shadow-lg border-2 border-solid transition-all duration-300 ease-in-out border-[var(--border)] hover:shadow-xl hover:border-[var(--hoverBorder)] dark:border-[var(--darkBorder)] dark:hover:border-[var(--darkHoverBorder)]"
           id="todo"
         >
           <h2 className="font-bold text-xl mt-1">Todo</h2>
@@ -161,7 +164,7 @@ export default function Kanban() {
           </ul>
         </div>
         <div
-          className="flex flex-col bg-[#FFF9F9] w-full h-full rounded-2xl items-center shadow-lg border-2 border-solid border-gray-300 transition-all duration-300 ease-in-out hover:shadow-xl hover:border-gray-400"
+          className="flex flex-col bg-[var(--foreground)] dark:bg-[var(--darkForeground)] w-full h-full rounded-2xl items-center shadow-lg border-2 border-solid border-[var(--border)] hover:border-[var(hoverBorder)] dark:border-[var(--darkBorder)] dark:hover:border-[var(--darkHoverBorder)] transition-all duration-300 ease-in-out hover:shadow-xl"
           id="inProgress"
         >
           <h2 className="font-bold text-xl mt-1">In progress</h2>
@@ -189,7 +192,7 @@ export default function Kanban() {
           </ul>
         </div>
         <div
-          className="flex flex-col bg-[#FFF9F9] w-full h-full rounded-2xl items-center shadow-lg border-2 border-solid border-gray-300 transition-all duration-300 ease-in-out hover:shadow-xl hover:border-gray-400"
+          className="flex flex-col bg-[var(--foreground)] dark:bg-[var(--darkForeground)] w-full h-full rounded-2xl items-center shadow-lg border-2 border-solid border-[var(--border)] hover:border-[var(--hoverBorder)] dark:border-[var(--darkBorder)] dark:hover:border-[var(--darkHoverBorder)] transition-all duration-300 ease-in-out hover:shadow-xl"
           id="done"
         >
           <h2 className="font-bold text-xl mt-1">Done</h2>

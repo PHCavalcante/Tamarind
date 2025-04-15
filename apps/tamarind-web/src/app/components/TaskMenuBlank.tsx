@@ -112,7 +112,7 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
                 type="checkbox"
                 checked={isChecked[i - 1]}
                 onChange={() => handleCheckboxChange(i - 1)}
-                className="w-5 h-5 peer mr-2 accent-[#201335bb]"
+                className="w-5 h-5 peer mr-2 accent-[var(--accent)] dark:accent-[var(--darkAccent)]"
               />
               <label
                 htmlFor={`task ${i}`}
@@ -161,7 +161,7 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
     return items;
   }
   return (
-    <div className="flex flex-col w-full h-full bg-[#F3EDED] py-[14px] px-3 shadow-lg shadow-gray-500/50 gap-10 overflow-auto">
+    <div className="flex flex-col w-full h-full bg-[var(--background)] dark:bg-[var(--darkBackground)] py-[14px] px-3 shadow-lg shadow-gray-500/50 gap-10 overflow-auto">
       <div className="flex flex-col w-auto content-center items-center justify-center">
         <div className="flex items-center gap-2">
           {showPicker && (
@@ -178,7 +178,7 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
             {emoji.current == "" ? (
               <Image
                 src={pencil}
-                className="opacity-40"
+                className="opacity-40 dark:invert"
                 alt="Icon picker button"
               />
             ) : (
@@ -207,7 +207,7 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
         )}
       </div>
       {action == "List" && (
-        <div className="flex flex-row items-center gap-1 content-center mt-28">
+        <div className="flex flex-row items-center gap-5 content-center mt-28">
           <button
             className="flex items-center gap-1"
             name="addTask"
@@ -219,7 +219,7 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
               isChecked[counter.tasksCounter] = false;
             }}
           >
-            <Image src={add} width={20} height={20} alt="Add task button" />
+            <Image src={add} width={20} height={20} alt="Add task button" className="dark:invert" />
             <label htmlFor="addTask" className="opacity-50 cursor-pointer">
               Add task
             </label>
@@ -279,7 +279,7 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
         )}
       </div>
       <button
-        className="w-full h-10 bg-[#201335bb] text-white font-bold rounded-lg hover:bg-[#201335dd]"
+        className="w-full h-10 bg-[var(--accent)] text-white dark:bg-[var(--darkAccent)] font-bold rounded-lg hover:bg-[#201335dd]"
         onClick={
           action === "List"
             ? () => {

@@ -38,7 +38,7 @@ export default function Header(){
     }, []);
 
     return (
-      <header className="flex flex-col w-full h-16 items-center bg-[#F3EDED] content-center px-3 rounded-2xl shadow-lg sm:justify-between sm:flex-row">
+      <header className="flex flex-col w-full h-16 items-center bg-[var(--background)] dark:bg-[var(--darkBackground)] dark:text-[var(--darkText)] content-center px-3 rounded-l-xl shadow-lg sm:justify-between sm:flex-row">
         {isPageLoaded && <div className="flex items-center justify-center">
           <div className="w-max">
             <h1 className="animate-typing overflow-hidden whitespace-nowrap text-lg md:text-xl">

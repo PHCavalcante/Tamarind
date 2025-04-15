@@ -5,6 +5,7 @@ import {
   SignIn,
 } from "@clerk/nextjs";
 import { TaskProvider } from "@/hooks/taskContext";
+import { ThemeProvider } from "next-themes";
 import { Metadata } from "next";
 import Image from "next/image";
 import "./globals.css";
@@ -28,15 +29,22 @@ export default function RootLayout({
     <ClerkProvider>
       <TaskProvider>
         <SnackProvider>
-          <html lang="en">
+          <html lang="en" suppressHydrationWarning>
             <body className="flex h-screen">
-              <SignedOut>
-                <div className="flex flex-col items-center justify-center w-full bg-gradient-to-tr from-[#F3EDED] via-rose-100 to-[#FFF9F9]">
-                  <Image width={200} src={logo} alt="Tamarind Logo" className="-rotate-90 w-[15vw] min-w-20 max-w-44" />
-                  <SignIn routing="hash" />
-                </div>
-              </SignedOut>
-              <SignedIn>{children}</SignedIn>
+              <ThemeProvider attribute={"class"}>
+                <SignedOut>
+                  <div className="flex flex-col items-center justify-center w-full bg-gradient-to-tr from-[#F3EDED] via-rose-100 to-[#FFF9F9]">
+                    <Image
+                      width={200}
+                      src={logo}
+                      alt="Tamarind Logo"
+                      className="-rotate-90 w-[15vw] min-w-20 max-w-44"
+                    />
+                    <SignIn routing="hash" />
+                  </div>
+                </SignedOut>
+                <SignedIn>{children}</SignedIn>
+              </ThemeProvider>
             </body>
           </html>
         </SnackProvider>

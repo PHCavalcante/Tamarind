@@ -789,21 +789,21 @@ export default function EmojiPicker({ showPicker, setShowPicker, parentEmoji } :
     <div
       className={
         showPicker
-          ? "absolute w-96 h-[500px] top-20 left-2/4 bg-[rgba(255,50,10,0.4)] z-10 backdrop-blur-sm rounded-lg"
+          ? "absolute w-96 h-[500px] top-32 left-2/4 bg-[var(--foreground)] dark:bg-[var(--darkAccent)] z-10 backdrop-blur-sm rounded-lg animate-modal"
           : "hidden"
       }
     >
       <div className="flex items-center justify-between p-2">
-        <h1 className="text-xl font-bold text-[#333333]">Emoji Picker</h1>
+        <h1 className="text-xl font-bold">Emoji Picker</h1>
         <button className="text-3xl" onClick={() => setShowPicker(false)}>
           &#9932;
         </button>
       </div>
-      <div className="flex flex-wrap w-full justify-center h-full gap-2 p-2 bg-red-100 rounded-lg overflow-y-scroll">
+      <div className="flex flex-wrap w-full justify-center h-full gap-2 p-2 bg-[var(--foreground)] dark:bg-[var(--darkForeground)] rounded-lg overflow-y-scroll">
         {emojis.map((emoji, index) => {
           return (
             <button
-              className="scale-150 w-8 hover:bg-red-200"
+              className="scale-150 w-8 hover:bg-[var(--hoverPaper)] rounded-lg transition-all duration-200 ease-in-out"
               key={index}
               dangerouslySetInnerHTML={{ __html: emoji }}
               onClick={() => {parentEmoji.current = emoji; setShowPicker(false)} }

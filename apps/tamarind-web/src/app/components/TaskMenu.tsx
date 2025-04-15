@@ -47,7 +47,7 @@ export default function TaskMenu() {
               <input
                 type="checkbox"
                 checked={tasksStates[i - 1] || false}
-                className="w-5 h-5 peer mr-2 hover:cursor-pointer accent-[var(--accent)]"
+                className="w-5 h-5 peer mr-2 hover:cursor-pointer accent-[var(--accent)] dark:accent-[var(--darkAccent)]"
                 onChange={() => handleCheckboxChange(i - 1)}
               />
               <label
@@ -81,7 +81,11 @@ export default function TaskMenu() {
           >
             <span>Actions </span>
             <div className="h-7 border-l-2 border-white bg-white"></div>
-            <span className={`text-lg transition-all ease-in-out duration-300 ${openContextMenu ? "rotate-180" : "rotate-0"}`}>▼</span>
+            <span
+              className={`text-lg transition-all ease-in-out duration-300 ${openContextMenu ? "rotate-180" : "rotate-0"}`}
+            >
+              ▼
+            </span>
           </button>
           <div
             className={`absolute bottom-12 md:bottom-0 lg:block bg-[#e4dede] lg:opacity-100 p-2 rounded-lg lg:bg-transparent transition-all ease-in-out duration-500 ${openContextMenu ? "block" : "opacity-0 transition-none"}`}
@@ -103,6 +107,7 @@ export default function TaskMenu() {
                     height={40}
                     src={inProgress}
                     alt="In progress button"
+                    className="dark:invert"
                   />
                   Set to in progress
                 </button>
@@ -139,7 +144,7 @@ export default function TaskMenu() {
                     }
                     className="flex items-center hover:scale-105 gap-2"
                   >
-                    <Image src={edit} alt="Edit Task" />
+                    <Image src={edit} className="dark:invert" alt="Edit Task" />
                     Edit {selectedTask.type}
                   </button>
                 )}
@@ -152,7 +157,11 @@ export default function TaskMenu() {
                     }}
                     className="flex items-center hover:scale-105 gap-2"
                   >
-                    <Image src={deleteIcon} alt="Delete Task Button" />
+                    <Image
+                      src={deleteIcon}
+                      className="dark:invert"
+                      alt="Delete Task Button"
+                    />
                     Delete {selectedTask.type}
                   </button>
                 )}
@@ -161,7 +170,11 @@ export default function TaskMenu() {
                   className="flex items-center hover:scale-105 gap-2"
                   onClick={() => setOpenPomodoro(true)}
                 >
-                  <Image src={timer} alt="Pomodoro button" />
+                  <Image
+                    src={timer}
+                    className="dark:invert"
+                    alt="Pomodoro button"
+                  />
                   Start pomodoro
                 </button>
               )}
@@ -191,7 +204,7 @@ export default function TaskMenu() {
       >
         <Image
           src={deleteIcon}
-          className="mr-3 ml-4"
+          className="mr-3 ml-4 dark:invert"
           alt="Delete Task Button"
         />
         Delete {isTask(selectedTask) ? "task" : isNote(selectedTask) ? "note" : "list"}
@@ -199,7 +212,7 @@ export default function TaskMenu() {
     );
   }
   return (
-    <div className="relative flex flex-col w-full h-full max-h-full bg-[#F3EDED] py-[14px] px-3 shadow-lg shadow-gray-500/50 rounded-2xl overflow-x-hidden overflow-auto">
+    <div className="relative flex flex-col w-full h-full max-h-full bg-[var(--background)] dark:bg-[var(--darkBackground)] py-[14px] px-3 shadow-lg shadow-gray-500/50 rounded-2xl overflow-x-hidden overflow-auto">
       <div
         className={
           !isNote(selectedTask)
@@ -263,11 +276,11 @@ export default function TaskMenu() {
             {calculateCompletedListPercentage()}%
           </label>
           <div
-            className="flex w-24 h-2 bg-gray-200 rounded-full overflow-hidden dark:bg-gray-300"
+            className="flex w-24 h-2 bg-gray-200 rounded-full overflow-hidden dark:bg-[var(--darkForeground)]"
             role="progressbar"
           >
             <div
-              className="flex flex-col justify-center rounded-full overflow-hidden bg-blue-600 text-xs text-white text-center whitespace-nowrap transition duration-500 dark:bg-[var(--accent)]"
+              className="flex flex-col justify-center rounded-full overflow-hidden bg-blue-600 text-xs text-white text-center whitespace-nowrap transition duration-500 dark:bg-[var(--darkAccent)]"
               style={{ width: `${calculateCompletedListPercentage()}%` }}
             ></div>
           </div>
