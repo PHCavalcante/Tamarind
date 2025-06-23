@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect, useRef, JSX } from "react";
+import React, { useState, useEffect, useRef, JSX } from "react";
 import axios from "axios";
 import Modal from "./Modal";
 import SettingsModal from "./SettingsModal";
@@ -21,9 +21,42 @@ import arrow from "../../assets/arrow.svg";
 import settings from "../../assets/settings.svg";
 import arrowRight from "../../assets/arrowRight.svg";
 import kanban from "../../assets/kanban.svg";
+import routine from "../../assets/routine.svg";
 import search from "../../assets/search.svg";
 import logo from "../../app/icon.png";
 
+function Tooltip({text, ref, position} : {text: string, ref: React.RefObject<HTMLSpanElement | null>, position?: string}) {
+  return (
+    <div className="relative inline-block">
+      <span
+        ref={ref}
+        className={`absolute z-10 w-fit bottom-6 px-2 py-1 text-white text-sm rounded bg-[var(--accent)] 
+                pointer-events-none opacity-0 transition-all ease-out duration-700 ${position ?? "-left-2"}`}
+      >
+        {text}
+        <span
+          className="absolute left-1/2 -bottom-1.5 transform -translate-x-1/2 
+                 w-0 h-0 
+                 border-l-[6px] border-l-transparent 
+                 border-r-[6px] border-r-transparent 
+                 border-t-[6px] border-t-[var(--accent)]"
+        />
+      </span>
+    </div>
+  );
+}
+
+  const showTooltip = (tooltipRef: React.RefObject<HTMLSpanElement>) => {
+    if (tooltipRef) {
+      tooltipRef.current.style.opacity = "1";
+    }
+  };
+
+  const hideTooltip = (tooltipRef: React.RefObject<HTMLSpanElement>) => {
+    if (tooltipRef) {
+      tooltipRef.current.style.opacity = "0";
+    }
+  };
 export default function Menu() {
   const [isOpen, setIsOpen] = useState(true);
   const [openModal, setOpenModal] = useState(false);
@@ -33,7 +66,9 @@ export default function Menu() {
   const [lists, setLists] = useState<listTypes[]>([]);
   const [searchItems, setSearchItems] = useState<JSX.Element[]>([]);
   const inputSearchValue = useRef("");
-  const { setSelectedTask } = UseTaskContext();
+ const routineTooltipRef = useRef<HTMLSpanElement>(null!);
+ const kanbanTooltipRef = useRef<HTMLSpanElement>(null!);
+  const { setSelectedTask, selectedTask } = UseTaskContext();
   const user = GetUserData();
   const { openSnackbar } = UseSnackbarContext();
   const [showSubmenu, setShowSubmenu] = useState({
@@ -43,7 +78,6 @@ export default function Menu() {
     lists: true,
     notes: true,
   });
-
   useEffect(() => {
     const fetchData = async () => {
       if (!user) return;
@@ -196,7 +230,7 @@ export default function Menu() {
     <div
       className={
         isOpen
-          ? "absolute z-10 md:relative md:min-w-96 md:w-96 flex flex-col h-screen transition-all duration-500 ease-in-out bg-[var(--background)] dark:bg-[var(--darkBackground)] dark:text-[var(--darkText)] px-[30px] shadow-lg shadow-gray-500/50"
+          ? "absolute z-10 md:relative md:min-w-96 md:w-96 flex flex-col h-screen transition-all duration-500 ease-in-out bg-[var(--background)] dark:bg-[var(--darkBackground)] dark:text-[var(--darkText)] px-[30px] shadow-lg shadow-gray-500/50 dark:border-[var(--darkBorder)] border-[var(--border)]"
           : "flex flex-col h-screen bg-[var(--background)] dark:bg-[var(--darkBackground)] dark:text-[var(--darkText)] shadow-lg shadow-gray-500/50 px-2 items-center gap-3 transition-all ease-in-out duration-500"
       }
     >
@@ -271,18 +305,32 @@ export default function Menu() {
       <div
         className={
           isOpen
-            ? "flex items-center justify-between"
+            ? "flex items-center gap-2"
             : "flex flex-col items-center gap-3"
         }
       >
+        <Tooltip text="Routine" ref={routineTooltipRef} />
         <button
-          className="flex my-2 hover:bg-[var(--paper)] dark:hover:bg-[var(--darkPaper)] hover:scale-110"
+          className={`flex my-2 border-2 p-[2px] rounded-lg hover:bg-[var(--paper)] dark:hover:bg-[var(--darkPaper)] hover:scale-110 ${selectedTask === "Routine" ? "border-[var(--accent)] dark:border-[var(--darkAccent)]" : "border-transparent"}`}
+          onClick={() => setSelectedTask("Routine")}
+          onMouseEnter={() => showTooltip(routineTooltipRef)}
+          onMouseLeave={() => hideTooltip(routineTooltipRef)}
+         
+        >
+          <Image src={routine} className="dark:invert" alt="Routine" />
+        </button>
+        <Tooltip text="Kanban" ref={kanbanTooltipRef} position="-left-2" />
+        <button
+          className={`lex my-2 border-2 p-[2px] rounded-lg hover:bg-[var(--paper)] dark:hover:bg-[var(--darkPaper)] hover:scale-110 ${selectedTask === "Kanban" ? "border-[var(--accent)] dark:border-[var(--darkAccent)]" : "border-transparent"}`}
           onClick={() => setSelectedTask("Kanban")}
+          onMouseEnter={() => showTooltip(kanbanTooltipRef)}
+          onMouseLeave={() => hideTooltip(kanbanTooltipRef)}
+         
         >
           <Image src={kanban} className="dark:invert" alt="Kanban view icon" />
         </button>
         <button
-          className="flex hover:bg-[var(--paper)] dark:hover:bg-[var(--darkPaper)] transition-all duration-500 hover:rotate-180"
+          className="flex transition-all duration-500 hover:rotate-180 ml-auto"
           onClick={() => setOpenSettingsModal(true)}
         >
           <Image src={settings} className="dark:invert" alt="Settings Button" />
@@ -291,7 +339,7 @@ export default function Menu() {
       <div
         className={
           isOpen
-            ? "bg-[var(--foreground)] dark:bg-[var(--darkForeground)] h-full pt-[18px] px-[15px] mb-5 rounded-xl overflow-y-auto transition-all duration-500 ease-in-out"
+            ? "bg-gradient-to-b from-[var(--background)] to-[var(--foreground)] dark:bg-gradient-to-b dark:from-[var(--darkBackground)] dark:to-[var(--darkForeground)] h-full pt-[18px] px-[15px] mb-5 rounded-xl overflow-y-auto transition-all duration-500 ease-in-out"
             : "opacity-0 w-0 pointer-events-none"
         }
       >
@@ -344,7 +392,7 @@ export default function Menu() {
       <Modal
         openModal={openModal}
         setOpenModal={setOpenModal}
-        action="Add new"
+        action="Add new task"
       />
       <SettingsModal
         openSettingsModal={openSettingsModal}

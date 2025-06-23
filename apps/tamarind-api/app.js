@@ -1,5 +1,6 @@
 import express from "express";
 import routes from "./src/routes/tasksRoutes.js";
+import "./scheduler.js";
 
 const app = express();
 routes(app);

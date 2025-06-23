@@ -5,6 +5,7 @@ import TaskMenu from "./TaskMenu";
 import DefaultTaskMenu from "./DefaultTaskMenu";
 import TaskMenuBlank from "./TaskMenuBlank";
 import Kanban from "./Kanban";
+import Routine from "./Routine";
 import { ViewType } from "@/types/dataTypes";
 
 export default function TaskManager() {
@@ -20,6 +21,8 @@ export default function TaskManager() {
         return <TaskMenuBlank action="Note" />;
       case "Kanban":
         return <Kanban />;
+      case "Routine":
+        return <Routine />;
       default:
         return <DefaultTaskMenu />;
     }

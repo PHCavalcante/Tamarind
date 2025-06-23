@@ -26,7 +26,7 @@ export type listTypes = Pick<
 
 export type combination = taskTypes & listTypes;
 
-export type ViewType = "List" | "Note" | "Kanban";
+export type ViewType = "List" | "Note" | "Kanban" | "Routine";
 
 export type SelectedTaskType =
   | taskTypes

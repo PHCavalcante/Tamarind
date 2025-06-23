@@ -95,7 +95,7 @@ export default function Kanban() {
           return (
             <li
               id={processedTask._id}
-              className="w-full flex flex-col bg-[var(--paper)] hover:bg-[var(--hoverPaper)] dark:bg-[var(--darkPaper)] dark:text-[var(--darkText)] dark:hover:bg-[var(--darkPaperHover)] rounded p-2 cursor-pointer shadow-md"
+              className="w-full flex flex-col bg-[var(--paper)] hover:bg-[var(--hoverPaper)] dark:bg-[var(--darkPaper)] dark:text-[var(--darkText)] dark:hover:bg-[var(--darkPaperHover)] rounded p-2 cursor-pointer shadow-md transition-all duration-300 ease-in-out"
               key={processedTask._id}
               data-column={taskStatus}
               onClick={() => setSelectedTask(processedTask)}
@@ -131,94 +131,46 @@ export default function Kanban() {
       }
   }
 
-  return (
-    <div className="flex flex-col w-full h-full bg-[var(--background)] dark:bg-[var(--darkBackground)] py-[14px] px-3 shadow-lg shadow-gray-500/50 rounded-2xl">
-      {/* <h1 className="text-center text-3xl font-bold my-2">Kanban</h1> */}
-      <div className="grid grid-flow-row grid-cols-1 h-full md:grid-cols-3 gap-4">
-        <div
-          className="flex flex-col bg-[var(--foreground)] dark:bg-[var(--darkForeground)] w-full h-full rounded-2xl items-center shadow-lg border-2 border-solid transition-all duration-300 ease-in-out border-[var(--border)] hover:shadow-xl hover:border-[var(--hoverBorder)] dark:border-[var(--darkBorder)] dark:hover:border-[var(--darkHoverBorder)]"
+  function generateKanbanColumn({title,type}: {title: string; type: "todo" | "inProgress" | "done"}) {
+    return (
+      <div
+        className="flex flex-col bg-gradient-to-b from-[var(--foreground)] to-[var(--background)] dark:bg-gradient-to-b dark:from-[var(--darkForeground)] dark:to-[var(--darkBackground)] w-full h-full rounded-2xl items-center transition-all duration-300 ease-in-out border-[var(--border)] hover:shadow-xl hover:border-[var(--hoverBorder)] dark:border-[var(--darkBorder)] dark:hover:border-[var(--darkHoverBorder)] select-none"
+        id="todo"
+      >
+        <h2 className="font-bold text-xl mt-1">{title}</h2>
+        <ul
+          className="flex flex-col w-full h-full gap-4 p-3"
+          onDrop={(event) => drop(event)}
+          onDragOver={(event) => {
+            const target = event.currentTarget as HTMLElement;
+            if (!taskGrabed.current) return;
+            if (target.id === taskGrabed.current.column) return;
+            event.preventDefault();
+            document.getElementById(target.id)!.style.scale = "1.02";
+          }}
+          onDragLeave={(event) => {
+            event.preventDefault();
+            document.getElementById(type)!.style.scale = "1.0";
+          }}
+          onDropCapture={(event) => {
+            event.preventDefault();
+            document.getElementById(type)!.style.scale = "1.0";
+          }}
           id="todo"
         >
-          <h2 className="font-bold text-xl mt-1">Todo</h2>
-          <ul
-            className="flex flex-col w-full h-full gap-4 p-3"
-            onDrop={(event) => drop(event)}
-            onDragOver={(event) => {
-              const target = event.currentTarget as HTMLElement;
-              if (!taskGrabed.current) return;
-              if (target.id === taskGrabed.current.column) return;
-              event.preventDefault();
-              document.getElementById(target.id)!.style.scale = "1.02";
-            }}
-            onDragLeave={(event) => {
-              event.preventDefault();
-              document.getElementById("todo")!.style.scale = "1.0";
-            }}
-            onDropCapture={(event) => {
-              event.preventDefault();
-              document.getElementById("todo")!.style.scale = "1.0";
-            }}
-            id="todo"
-          >
-            {parseData("todo")}
-          </ul>
-        </div>
-        <div
-          className="flex flex-col bg-[var(--foreground)] dark:bg-[var(--darkForeground)] w-full h-full rounded-2xl items-center shadow-lg border-2 border-solid border-[var(--border)] hover:border-[var(hoverBorder)] dark:border-[var(--darkBorder)] dark:hover:border-[var(--darkHoverBorder)] transition-all duration-300 ease-in-out hover:shadow-xl"
-          id="inProgress"
-        >
-          <h2 className="font-bold text-xl mt-1">In progress</h2>
-          <ul
-            className="flex flex-col w-full h-full gap-4 p-3"
-            onDrop={(event) => drop(event)}
-            onDragOver={(event) => {
-              const target = event.currentTarget;
-              if (!taskGrabed.current) return;
-              if (target.id === taskGrabed.current.column) return;
-              event.preventDefault();
-              document.getElementById(target.id)!.style.scale = "1.02";
-            }}
-            onDragLeave={(event) => {
-              event.preventDefault();
-              document.getElementById("inProgress")!.style.scale = "1.0";
-            }}
-            onDropCapture={(event) => {
-              event.preventDefault();
-              document.getElementById("inProgress")!.style.scale = "1.0";
-            }}
-            id="inProgress"
-          >
-            {parseData("inProgress")}
-          </ul>
-        </div>
-        <div
-          className="flex flex-col bg-[var(--foreground)] dark:bg-[var(--darkForeground)] w-full h-full rounded-2xl items-center shadow-lg border-2 border-solid border-[var(--border)] hover:border-[var(--hoverBorder)] dark:border-[var(--darkBorder)] dark:hover:border-[var(--darkHoverBorder)] transition-all duration-300 ease-in-out hover:shadow-xl"
-          id="done"
-        >
-          <h2 className="font-bold text-xl mt-1">Done</h2>
-          <ul
-            className="flex flex-col w-full h-full gap-4 p-3"
-            onDrop={(event) => drop(event)}
-            onDragOver={(event) => {
-              const target = event.currentTarget as HTMLElement;
-              if (!taskGrabed.current) return;
-              if (target.id === taskGrabed.current.column) return;
-              event.preventDefault();
-              document.getElementById(target.id)!.style.scale = "1.02";
-            }}
-            onDragLeave={(event) => {
-              event.preventDefault();
-              document.getElementById("done")!.style.scale = "1.0";
-            }}
-            onDropCapture={(event) => {
-              event.preventDefault();
-              document.getElementById("done")!.style.scale = "1.0";
-            }}
-            id="done"
-          >
-            {parseData("done")}
-          </ul>
-        </div>
+          {parseData(type)}
+        </ul>
+      </div>
+    );
+  }
+
+
+  return (
+    <div className="flex flex-col w-full h-full bg-[var(--background)] rounded-br-none dark:bg-[var(--darkBackground)] py-[14px] px-3 shadow-lg shadow-gray-500/50 rounded-2xl">
+      <div className="grid grid-flow-row grid-cols-1 h-full md:grid-cols-3 gap-4">
+        {generateKanbanColumn({title: "To do", type: "todo"})}
+        {generateKanbanColumn({title: "In progress", type: "inProgress"})}
+        {generateKanbanColumn({title: "Done", type: "done"})}
       </div>
     </div>
   );

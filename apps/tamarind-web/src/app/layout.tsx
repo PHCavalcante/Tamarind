@@ -33,12 +33,13 @@ export default function RootLayout({
             <body className="flex h-screen">
               <ThemeProvider attribute={"class"}>
                 <SignedOut>
-                  <div className="flex flex-col items-center justify-center w-full bg-gradient-to-tr from-[#F3EDED] via-rose-100 to-[#FFF9F9]">
+                  <div className="flex flex-col items-center justify-center w-full h-full bg-gradient-to-tr from-[#F3EDED] via-rose-100 to-[#FFF9F9]">
                     <Image
                       width={200}
+                      id="logo"
                       src={logo}
                       alt="Tamarind Logo"
-                      className="-rotate-90 w-[15vw] min-w-20 max-w-44"
+                      className="-rotate-90 w-[15vw] h-[15vw] md:w-[10vw] md:h-[10vw] lg:w-[5vw] lg:h-[5vw]"
                     />
                     <SignIn routing="hash" />
                   </div>

@@ -81,3 +81,26 @@ export async function deleteList(listId){
      const result = await collection.deleteOne({ _id: new ObjectId(objId) });
      return result; 
 }
+export async function postRoutine(newRoutine){
+    const database = connection.db("todoDB");
+    const collection = database.collection("routines");
+    return collection.insertMany(newRoutine);
+}
+export async function getRoutines(userId){
+    const dataBase = connection.db("todoDB");
+    const collection = dataBase.collection("routines");
+    const result = await collection.find({userId: userId}).toArray();
+    return result;
+}
+export async function updateRoutine(id, isCompletedToday){
+    const database = connection.db("todoDB");
+    const collection = database.collection("routines");
+    const objId = ObjectId.createFromHexString(id);
+    return collection.updateOne({_id: new ObjectId(objId)}, {$set: {isCompletedToday: isCompletedToday}});
+}
+export async function deleteRoutine(id){
+    const database = connection.db("todoDB");
+    const collection = database.collection("routines");
+    const objId = ObjectId.createFromHexString(id);
+    return collection.deleteOne({_id: new ObjectId(objId)});
+}

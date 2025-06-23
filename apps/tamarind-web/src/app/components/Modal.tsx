@@ -167,7 +167,7 @@ export default function Modal({
           />
           <span className="self-end">{descriptionLength}/500</span>
           <div className="flex items-center justify-between max-w-[70%]">
-            {action == "Add new" && (
+            {action == "Add new task" && (
               <div className="flex items-center gap-2">
                 <input
                   className="w-5 h-5 "
@@ -222,7 +222,7 @@ export default function Modal({
                   setOpenModal(false);
                   setOpenSnackbar(true);
                   setSnackbarMessage("Update");
-                } else if (action == "Add new") {
+                } else if (action == "Add new task") {
                   postTask({ ...formValues.current, type: "task" });
                   setOpenModal(false);
                   setOpenSnackbar(true);
@@ -264,7 +264,8 @@ export default function Modal({
         <div className="flex justify-between mb-5">
           <h2 className="font-bold text-2xl mx-auto">
             {action}{" "}
-            {isTask(selectedTask) &&
+            {action === "Add new task" ? "" : 
+              isTask(selectedTask) &&
               (selectedTask?.type == "note"
                 ? "note"
                 : selectedTask?.type == "task"

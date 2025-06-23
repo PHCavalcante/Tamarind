@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { listTasks, sendNewTask, editTask, removeTask, sendNewNote, ListNotes, removeNote, editNote, sendNewList, listLists, editList, removeList } from "../controllers/tasksController.js";
+import { listTasks, sendNewTask, editTask, removeTask, sendNewNote, ListNotes, removeNote, editNote, sendNewList, listLists, editList, removeList, sendNewRoutine, listRoutines, handleToggleRoutine, removeRoutine } from "../controllers/tasksController.js";
 
 const corsOptions = {
   origin: "https://tamarind.vercel.app",
@@ -22,6 +22,10 @@ const routes = (app) => {
     app.get("/lists/:userId", listLists);
     app.put("/lists/:id", editList)
     app.delete("/lists/:listID", removeList);
+    app.post("/routines", sendNewRoutine);
+    app.get("/routines/:userId", listRoutines);
+    app.patch("/routines/:id", handleToggleRoutine);
+    app.delete("/routines/:id", removeRoutine);
     app.get("/ping", (req, res) => {
       res.status(200).send("pong");
     })

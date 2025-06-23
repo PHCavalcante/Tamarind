@@ -1,4 +1,4 @@
-import { getTasks, createTask, updateTask, deleteTask, postNote, getNotes, deleteNote, updateNote, postList, getLists, updateList, deleteList } from "../models/tasksModel.js";
+import { getTasks, createTask, updateTask, deleteTask, postNote, getNotes, deleteNote, updateNote, postList, getLists, updateList, deleteList, postRoutine, getRoutines, updateRoutine, deleteRoutine } from "../models/tasksModel.js";
 
 export async function listTasks(req, res){
     const userId = req.params.userId;
@@ -161,6 +161,64 @@ export async function removeList(req, res){
       res.status(500).json({ Error: "Request failed" });
     }
 }
+export async function sendNewRoutine(req, res){
+    const newRoutine = req.body;
+    if (!newRoutine){
+        res.status(400).json({"Error": "Missing parameters"});
+        return;
+    }
+    try{
+        const response = await postRoutine(newRoutine);
+        res.status(200).json(response);
+    } catch (error){
+        console.log(error.message);
+        res.status(500).json({"Error": "Request failed"});
+    }
+}
+export async function listRoutines(req, res){
+    const userId = req.params.userId;
+    try{
+        const routines = await getRoutines(userId);
+        res.status(200).json(routines);
+    } catch (error){
+        console.log(error.message);
+        res.status(500).json({"Error": "Request failed"});
+    }
+}
+export async function handleToggleRoutine(req, res){
+    const id = req.params.id;
+    const isCompletedToday = req.body.isCompletedToday;
+    if (id.length != 24) {
+      res.status(400).json({ Error: "Invalid ID" });
+      return;
+    }
+    if (typeof isCompletedToday !== "boolean") {
+      res.status(400).json({ Error: "isCompletedToday must be a boolean" });
+      return;
+    }
+    try {
+        const updatedRoutine = await updateRoutine(id, isCompletedToday);
+        return updatedRoutine;
+    } catch (error) {
+        console.log(error.message);
+        throw new Error("Request failed");
+    }
+}
+export async function removeRoutine(req, res){
+    const id = req.params.id;
+    if (id.length != 24) {
+      res.status(400).json({ Error: "Invalid ID" });
+      return;
+    }
+    try {
+        const deletedRoutine = await deleteRoutine(id);
+        res.status(200).json(deletedRoutine);
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).json({"Error": "Request failed"});
+    }
+}
+
 // export async function postNewAccount(req, res){
 //     const { email, passwordHash, name, createdAt } = req.body;
 //     if (!email || !passwordHash || !name){

@@ -4,7 +4,7 @@ import GetUserData from "@/utils/GetUserData";
 import { UserButton } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 
-const week = [
+export const week = [
   "Sunday",
   "Monday",
   "Tuesday",
@@ -21,13 +21,11 @@ const greetings = [
   "What's up?",
   "Yo!"
 ];
-
+const date = new Date();
+export const weekDay = week[date.getDay()];
 export default function Header(){
     const [isPageLoaded, setIsPageLoaded] = useState(false);
     const user = GetUserData();
-    const date = new Date();
-    const weekDay = week[date.getDay()];
-
     useEffect(() => {
       if (document.readyState === "complete") {
         setIsPageLoaded(true);

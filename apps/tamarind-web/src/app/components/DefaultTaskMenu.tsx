@@ -1,6 +1,6 @@
 export default function DefaultTaskMenu(){
     return (
-      <div className="relative w-full h-full bg-[var(--background)] dark:bg-[var(--darkBackground)] dark:text-[var(--darkText)] py-[14px] px-3 shadow-lg shadow-gray-500/50">
+      <div className="relative w-full h-full bg-[var(--background)] dark:bg-[var(--darkBackground)] dark:text-[var(--darkText)] py-[14px] px-3 shadow-lg shadow-gray-500/50 rounded-t-2xl">
         <div className="flex flex-col h-full items-center content-center justify-center gap-10">
           <h1 className="font-bold sm:text-lg md:text-xl lg:text-3xl">Welcome!</h1>
           <h2 className="font-bold text-sm md:text-lg lg:text-xl text-center">good to see you here</h2>
