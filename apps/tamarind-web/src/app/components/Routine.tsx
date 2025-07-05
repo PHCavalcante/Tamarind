@@ -73,7 +73,7 @@ export default function Routine() {
 }
   const dragStartHandler = (ev: React.DragEvent<HTMLLIElement>, routine: RoutineType, weekday: string) => {
     ev.dataTransfer.effectAllowed = "move"; 
-    ev.dataTransfer.setData("routineId", routine._id);
+    ev.dataTransfer.setData("routineId", routine._id || "");
      ev.dataTransfer.setData("weekday", weekday);
      setIsDragging(true);
   };
@@ -155,7 +155,7 @@ export default function Routine() {
               <input
                 type="checkbox"
                 checked={routine.isCompletedToday}
-                onChange={() => handleToggleRoutine(routine._id, weekday)}
+                onChange={() => routine._id && handleToggleRoutine(routine._id, weekday)}
                 className="accent-[var(--accent)] dark:accent-[var(--darkAccent)] cursor-pointer"
                 style={{ width: 20, height: 20 }}
               />
@@ -171,7 +171,9 @@ export default function Routine() {
                         updated.splice(index, 1);
                         return { ...prev, [weekday]: updated };
                       });
-                      axiosDeleteRoutine(routine._id);
+                      if (routine._id) {
+                        axiosDeleteRoutine(routine._id);
+                      }
                       setOpenSnackbar(true);
                       setSnackbarMessage("routineDeleted");
                     }}
