@@ -1,6 +1,8 @@
 import { taskTypes } from "@/types/dataTypes";
 import { useState, useEffect, Dispatch, SetStateAction } from "react";
-import { updateTask } from "@/services/fetchData";
+import { markTaskAsCompleted } from "@/services/fetchData";
+import { useUserToken } from "@/utils/useUserToken";
+import { UseSnackbarContext } from "@/hooks/snackbarContext";
 
 type PomodoroProps = {
   minutes: number;
@@ -9,6 +11,21 @@ type PomodoroProps = {
   content: taskTypes;
 };
 
+const formatTime = (time: number) => {
+  const minutes = Math.floor(time / 60);
+  const seconds = time % 60;
+  return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+};
+
+function showNotification(title: string, body: string) {
+  if (Notification.permission === "granted") {
+    new Notification(title, {
+      body: body,
+      icon: "../icon.png",
+    });
+  }
+}
+  
 export default function Pomodoro({
   minutes,
   openModal,
@@ -18,19 +35,14 @@ export default function Pomodoro({
   const [time, setTime] = useState(minutes * 60);
   const [start, setStart] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
-  
+  const [token, setToken] = useState("");
+  const getToken = useUserToken();
+  const { setSnackbarMessage, setOpenSnackbar } = UseSnackbarContext();
+
   if (Notification.permission !== "granted") {
-    Notification.requestPermission();
-  }
-  function showNotification(title: string, body: string) {
-    if (Notification.permission === "granted") {
-      new Notification(title, {
-        body: body,
-        icon: "../icon.png",
-      });
-    }
-  }
-  
+  Notification.requestPermission();
+}
+
   useEffect(() => {
     if (start){
     const interval = setInterval(() => {
@@ -40,26 +52,32 @@ export default function Pomodoro({
   }
   }, [start]);
   useEffect(() => {
-    if (time === 0) {
+    if (time === 0 && !isCompleted) {
       setIsCompleted(true);
+       if (document.visibilityState === "hidden") {
+      showNotification("🍅 Pomodoro Timer", "Take a break!");
+    }
       setTimeout(() => {
         setIsCompleted(false);
         setTime(minutes * 60);
       }, 25000);
     }
-  }, [time, minutes]);
-  const formatTime = () => {
-    const minutes = Math.floor(time / 60);
-    const seconds = time % 60;
-    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
-  };
-  useEffect(() => {
-    if (isCompleted) {
-      if (document.visibilityState === "hidden") {
-        showNotification("🍅 Pomodoro Timer", "Take a break!");
-      }
+  }, [time, minutes, isCompleted]);
+  // useEffect(() => {
+  //   if (isCompleted && document.visibilityState === "hidden") {
+  //     showNotification("🍅 Pomodoro Timer", "Take a break!");
+  //   }
+  // }, [isCompleted]);
+
+  const fetchToken = async () => {
+    const response = await getToken();
+    if (!response) {
+      console.error("Failed to fetch token");
+      return;
     }
-  }, [isCompleted]);
+    setToken(response);
+  };
+  fetchToken();
   return (
     <div
       className={
@@ -78,7 +96,7 @@ export default function Pomodoro({
         )}
         <div className="bg-white dark:bg-[var(--darkForeground)] p-8 w-fit rounded-full border-8 dark:border-[var(--accent)] m-auto">
           <span className="text-7xl" id="timer">
-            {formatTime()}
+            {formatTime(time)}
           </span>
         </div>
         <div className="flex gap-4">
@@ -94,8 +112,18 @@ export default function Pomodoro({
             <button
               className="bg-gray-300 hover:bg-[var(--paper)] dark:bg-[var(--darkAccent)] dark:hover:bg-[var(--darkAccentHover)] transition-colors ease-in-out duration-300 p-2 rounded-lg font-bold"
               onClick={() => {
-                content.isCompleted = true;
-                updateTask(content);
+                if (token) {
+                  try {
+                    content.isCompleted = true;
+                    content.inProgress = false;
+                    content.type = "task";
+                    markTaskAsCompleted(content, token);
+                    setSnackbarMessage("Finished");
+                    setOpenSnackbar(true);
+                  } catch (error) {
+                    console.error(error);
+                  }
+                }
                 setOpenModal(false);
               }}
             >

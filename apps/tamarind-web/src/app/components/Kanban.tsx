@@ -1,72 +1,86 @@
 "use client";
 
-// import useStore from "@/services/store";
-import { useEffect, useRef, useState, DragEvent } from "react";
-import GetUserData from "@/utils/GetUserData";
+import { useEffect, useState, DragEvent } from "react";
 import { UseTaskContext } from "@/hooks/taskContext";
-import { UseSnackbarContext } from "@/hooks/snackbarContext";
 import { taskTypes } from "@/types/dataTypes";
-import { updateTask } from "@/services/fetchData";
-import axios from "axios";
+import { fetchTasks, updateTask } from "@/services/fetchData";
+import { useUserToken } from "@/utils/useUserToken";
+import { UseSnackbarContext } from "@/hooks/snackbarContext";
 
 export default function Kanban() {
-  // const { tasksData, fetchData } = useStore();
   const [tasksData, setTasksData] = useState<taskTypes[]>([]);
+  const [taskGrabed, setTaskGrabed] = useState<taskTypes & { column: string } | null>(null);
   const { setSelectedTask } = UseTaskContext();
-  const taskGrabed = useRef<taskTypes & { column: string}>(null);
-  const user = GetUserData();
-  const { } = UseSnackbarContext();
+  const getToken = useUserToken();
+  const [token, setToken] = useState("");
+  const { setOpenSnackbar } = UseSnackbarContext();
 
   useEffect(() => {
-    if(!user) return;
     const fetchData = async () => {
-      try{
-        const response = await axios.get(
-          `https://tamarind-api.onrender.com/tasks/${user.id}`
-        );
-        const data = response.data;
-        setTasksData(data);
+      const response = await getToken();
+      if (!response){
+        console.error("Failed to fetch token");
+        return;
       }
-      catch (error){
-        console.log(error);
-      }
+      setToken(response);
+      const tasks = await fetchTasks(response);
+      setTasksData(tasks);
     }
     fetchData();
-  },[user]);
-
+  },[]);
   function drag(ev:DragEvent) {
     ev.dataTransfer?.setData("text", (ev.target as HTMLElement).id);
   }
 
   function drop(ev: DragEvent<HTMLElement>) {
     ev.preventDefault();
-    if (!taskGrabed.current) return;
+    if (!taskGrabed) return;
     const target = ev.currentTarget as HTMLElement;
     if (ev.dataTransfer){
       const data = ev.dataTransfer.getData("text");
-      if (document.getElementById(data)?.tagName == "LI" && target.id === taskGrabed.current!.column) return;
-      const draggedElement = document.getElementById(data);
-      if (draggedElement){
-        target.appendChild(draggedElement);
-      }
+      if (document.getElementById(data)?.tagName == "LI" && target.id === taskGrabed.column) return;
     }
-    if (target.id == "todo"){
-        taskGrabed.current!.inProgress = false;
-        taskGrabed.current!.isCompleted = false;
-        taskGrabed.current!.column = "todo";
-        updateTask(taskGrabed.current!);
-        // setJustAAction?.(true);
+    if (target.id == "todo"){ // SetOpenSnackbar below are just for trigger the menu to update the tasks
+        taskGrabed.inProgress = false;
+        taskGrabed.isCompleted = false;
+        taskGrabed.type = "task";
+        taskGrabed.column = "todo";
+        updateTask(taskGrabed, token);
+        setTasksData(prevTasks =>
+          prevTasks.map(task =>
+            task._id === taskGrabed._id
+              ? { ...task, inProgress: false, isCompleted: false }
+              : task
+          )
+        );
+        setOpenSnackbar(true);
     } else if (target.id == "inProgress"){
-        taskGrabed.current!.inProgress = true;
-        updateTask(taskGrabed.current!);
-        taskGrabed.current!.column = "inProgress";
-        // setJustAAction?.(true);
+        taskGrabed.inProgress = true;
+        taskGrabed.type = "task";
+        updateTask(taskGrabed, token);
+        taskGrabed.column = "inProgress";
+        setTasksData(prevTasks =>
+          prevTasks.map(task =>
+            task._id === taskGrabed._id
+              ? { ...task, inProgress: true }
+              : task
+          )
+        );
+        setOpenSnackbar(true);
     } else if (target.id == "done"){
-        taskGrabed.current!.inProgress = false;
-        taskGrabed.current!.isCompleted = true;
-        updateTask(taskGrabed.current!);
-        taskGrabed.current!.column = "done";
-        // setJustAAction?.(true);
+        taskGrabed.inProgress = false;
+        taskGrabed.isCompleted = true;
+        taskGrabed.type = "task";
+        updateTask(taskGrabed, token);
+        taskGrabed.column = "done";
+        setTasksData(prevTasks =>
+          prevTasks.map(task =>
+            task._id === taskGrabed._id
+              ? { ...task, inProgress: false, isCompleted: true }
+              : task
+          )
+        );
+        setOpenSnackbar(true);
     } else return;
   }
 
@@ -102,7 +116,7 @@ export default function Kanban() {
               draggable
               onDragStart={(event) => {
                 drag(event);
-                taskGrabed.current = processedTask;
+                setTaskGrabed(processedTask);
                 event.dataTransfer.setData(
                   "text/plain",
                   event.currentTarget.id
@@ -113,12 +127,12 @@ export default function Kanban() {
               <span className="font-semibold text-lg">
                 {processedTask.title}
               </span>
-              <span className="text-sm opacity-60">
+              {processedTask.scheduleDate && <span className="text-sm opacity-60">
                 Schedule to: {processedTask.scheduleDate}
-              </span>
-              <span className="text-sm opacity-60">
+              </span>}
+              {processedTask.createdAt && <span className="text-sm opacity-60">
                 Created at: {processedTask.createdAt}
-              </span>
+              </span>}
             </li>
           );
         }));
@@ -135,17 +149,17 @@ export default function Kanban() {
     return (
       <div
         className="flex flex-col bg-gradient-to-b from-[var(--foreground)] to-[var(--background)] dark:bg-gradient-to-b dark:from-[var(--darkForeground)] dark:to-[var(--darkBackground)] w-full h-full rounded-2xl items-center transition-all duration-300 ease-in-out border-[var(--border)] hover:shadow-xl hover:border-[var(--hoverBorder)] dark:border-[var(--darkBorder)] dark:hover:border-[var(--darkHoverBorder)] select-none"
-        id="todo"
+        id={type}
       >
         <h2 className="font-bold text-xl mt-1">{title}</h2>
         <ul
           className="flex flex-col w-full h-full gap-4 p-3"
           onDrop={(event) => drop(event)}
           onDragOver={(event) => {
-            const target = event.currentTarget as HTMLElement;
-            if (!taskGrabed.current) return;
-            if (target.id === taskGrabed.current.column) return;
             event.preventDefault();
+            const target = event.currentTarget as HTMLElement;
+            if (!taskGrabed) return;
+            if (target.id === taskGrabed.column) return;
             document.getElementById(target.id)!.style.scale = "1.02";
           }}
           onDragLeave={(event) => {
@@ -156,7 +170,7 @@ export default function Kanban() {
             event.preventDefault();
             document.getElementById(type)!.style.scale = "1.0";
           }}
-          id="todo"
+          id={type}
         >
           {parseData(type)}
         </ul>

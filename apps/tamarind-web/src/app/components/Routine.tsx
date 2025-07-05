@@ -1,40 +1,40 @@
-import Image from "next/image";
-import add from "../../assets/add.svg";
-import axios from "axios";
-import GetUserData from "@/utils/GetUserData";
 import { useState, useEffect, useMemo } from "react";
 import { weekDay as today, week } from "./Header";
+import { UseSnackbarContext } from "@/hooks/snackbarContext"
+import { fetchRoutines, deleteRoutine, updateRoutine, postRoutine } from "@/services/fetchData"
+import { useUserToken } from "@/utils/useUserToken";
+import type { RoutineType } from "@/types/dataTypes";
+import Image from "next/image";
+import add from "../../assets/add.svg";
 import columnIcon from "../../assets/column.svg";
 import listIcon from "../../assets/list.svg";
 import deleteIcon from "../../assets/deleteIcon.svg";
-import {UseSnackbarContext} from "@/hooks/snackbarContext"
 
-type Routine = {
-  _id?: string | undefined;
-  userId: string;
-  name: string;
-  weekday: string;
-  isCompletedToday: boolean;
-  isNew: boolean;
-};
 
 export default function Routine() {
-  const [routinesByDay, setRoutinesByDay] = useState<Record<string, Routine[]>>(
+  const [routinesByDay, setRoutinesByDay] = useState<Record<string, RoutineType[]>>(
     {}
   );
+  const [token, setToken] = useState("");
   const [currentViewMode, setCurrentViewMode] = useState<"column" | "list">("column");
   const [toggleMenu, setToggleMenu] = useState<number | string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isOverTrash, setIsOverTrash] = useState(false);
-  const { setOpenSnackbar, setSnackbarMessage } = UseSnackbarContext();
+  const getToken = useUserToken();
+  const { setOpenSnackbar, setSnackbarMessage, openSnackbar } = UseSnackbarContext();
 
-  const user = GetUserData();
   useEffect(() => {
     const fetchRoutine = async () => {
+      const response = await getToken();
+      if (!response) {
+        console.error("Failed to fetch token");
+        return;
+      }
+      setToken(response);
       try {
-        const response = await axios.get(`https://tamarind-api.onrender.com/routines/${user?.id}`);
-        const routines: Routine[] = response.data;
-        const grouped: Record<string, Routine[]> = {};
+        const routinesData = await fetchRoutines(response);
+        const routines: RoutineType[] = routinesData;
+        const grouped: Record<string, RoutineType[]> = {};
 
         for (const day of week) {
           grouped[day] = routines.filter((r) => r.weekday === day);
@@ -45,20 +45,18 @@ export default function Routine() {
         console.error("Error fetching routine:", error);
       }
     };
-
-    if (user?.id) {
-      fetchRoutine();
-    }
-  }, [user]);
+    fetchRoutine();
+  }, [openSnackbar]);
 
   const handleAddInput = (weekday: string) => {
+    const tempId = `temp-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     setRoutinesByDay((prev) => ({
       ...prev,
       [weekday]: [
         ...prev[weekday],
         {
-          _id: undefined,
-          userId: user?.id || "",
+          _id: tempId,
+          userId: "",
           name: "",
           weekday,
           isCompletedToday: false,
@@ -68,18 +66,14 @@ export default function Routine() {
     }));
   };
   function axiosDeleteRoutine(routineId: string) {
-    try {
-      axios.delete(`https://tamarind-api.onrender.com/routines/${routineId}`);
-      setOpenSnackbar(true);
-      setSnackbarMessage("routineDeleted");
-    } catch (err) {
-      console.error("Error while deleting routine:", err);
+    deleteRoutine(routineId, token);
+    setOpenSnackbar(true);
+    setSnackbarMessage("routineDeleted");
     setIsDragging(false);
-  }
 }
-  const dragStartHandler = (ev: React.DragEvent<HTMLLIElement>, routine: Routine, weekday: string) => {
+  const dragStartHandler = (ev: React.DragEvent<HTMLLIElement>, routine: RoutineType, weekday: string) => {
     ev.dataTransfer.effectAllowed = "move"; 
-    ev.dataTransfer.setData("routineId", routine._id || "");
+    ev.dataTransfer.setData("routineId", routine._id);
      ev.dataTransfer.setData("weekday", weekday);
      setIsDragging(true);
   };
@@ -102,7 +96,7 @@ export default function Routine() {
     setIsOverTrash(false);
     }
 
-  function DisplayRoutineColumn(weekday: string, routines: Routine[]) {
+  function DisplayRoutineColumn(weekday: string, routines: RoutineType[]) {
     const handleInputChange = (index: number, value: string) => {
       setRoutinesByDay((prev) => {
         const updated = [...prev[weekday]];
@@ -131,18 +125,8 @@ export default function Routine() {
         );
         return updated;
       });
-
-      try {
-        await axios.patch(`https://tamarind-api.onrender.com/routines/${id}`, {
-          isCompletedToday:
-            routinesByDay[weekday].find((r) => r._id === id)
-              ?.isCompletedToday === false,
-        });
-      } catch (err) {
-        console.log("Error updating routines:", err);
-      }
+      await updateRoutine(id, token, routinesByDay[weekday].find((r) => r._id === id)?.isCompletedToday === false,);
     };
-
     return (
       <div
         className={`flex flex-col w-full h-full gap-4 p-3 border border-[var(--border)] dark:border-[var(--darkBorder)] border-solid ${weekday === today ? "opacity-100" : "opacity-50"} ${currentViewMode === "list" ? "border-b-2 border-t-0" : "border-b-0 border-t-0"}`}
@@ -161,7 +145,7 @@ export default function Routine() {
              return (
             <li
               key={uniqueKey}
-              className={`flex relative w-fit pr-8 items-center gap-1 cursor-grab transition-all duration-300 ${isDragging ? "scale-105 opacity-70" : "hover:shadow-md hover:scale-105"}`}
+              className={`flex relative w-fit pr-8 items-center gap-1 cursor-grab transition-all duration-300 ${isDragging ? "scale-105 opacity-70" : "hover:scale-105"}`}
               draggable={currentViewMode === "column"}
               onDragStart={(ev) => dragStartHandler(ev, routine, weekday)}
               onDragEnd={() => setIsDragging(false)}
@@ -171,7 +155,7 @@ export default function Routine() {
               <input
                 type="checkbox"
                 checked={routine.isCompletedToday}
-                onChange={() => handleToggleRoutine(routine._id!, weekday)}
+                onChange={() => handleToggleRoutine(routine._id, weekday)}
                 className="accent-[var(--accent)] dark:accent-[var(--darkAccent)] cursor-pointer"
                 style={{ width: 20, height: 20 }}
               />
@@ -187,7 +171,7 @@ export default function Routine() {
                         updated.splice(index, 1);
                         return { ...prev, [weekday]: updated };
                       });
-                      axiosDeleteRoutine(routine._id!);
+                      axiosDeleteRoutine(routine._id);
                       setOpenSnackbar(true);
                       setSnackbarMessage("routineDeleted");
                     }}
@@ -226,20 +210,21 @@ export default function Routine() {
     );
   }, [routinesByDay]);
   const handleSaveRoutines = async () => {
-    const newRoutines: Routine[] = [];
+    const newRoutines: RoutineType[] = [];
 
     Object.values(routinesByDay).forEach((day) => {
       day.forEach((routine) => {
         if (routine.isNew && routine.name.trim() !== "") {
-          newRoutines.push({ ...routine, isNew: false });
+          newRoutines.push({ ...routine, isNew: false, _id: undefined });
         }
       });
     });
-
     try {
-      await axios.post("https://tamarind-api.onrender.com/routines", newRoutines);
+      console.log("Saving routines in routines page:", newRoutines);
+      console.log("Token in routines page:", token);
+      await postRoutine(newRoutines, token);
       setRoutinesByDay((prev) => {
-        const updated: Record<string, Routine[]> = {};
+        const updated: Record<string, RoutineType[]> = {};
         for (const [day, routines] of Object.entries(prev)) {
           updated[day] = routines.map((routine) =>
             routine.isNew ? { ...routine, isNew: false } : routine
@@ -255,7 +240,7 @@ export default function Routine() {
       setSnackbarMessage("error");
     }
   };
-
+  console.log("Routines by day:", routinesByDay);
   return (
     <div
       className={`flex flex-col relative w-full h-full bg-[var(--background)] dark:bg-[var(--darkBackground)] rounded-2xl items-center shadow-lg border-2 rounded-br-none rounded-tr-none border-solid border-[var(--border)] hover:border-[var(--hoverBorder)] dark:border-[var(--darkBorder)] dark:hover:border-[var(--darkHoverBorder)] transition-all duration-300 ease-in-out hover:shadow-xl ${currentViewMode === "list" && "overflow-hidden"}`}
@@ -297,7 +282,7 @@ export default function Routine() {
         {DisplayRoutineColumn("Sunday", routinesByDay["Sunday"] || [])}
         {currentViewMode !== "list" &&
           <button
-            className={`absolute opacity-0 pointer-events-none bottom-8 right-1/2 p-4 rounded-full bg-red-600 transition-all duration-500 ease-in-out ${isDragging && "opacity-100 pointer-events-auto scale-110 animate-pulse"} ${isOverTrash && "bg-red-700 scale-125 shadow-lg"}`}
+            className={`absolute opacity-0 pointer-events-none bottom-8 right-1/2 p-4 rounded-full bg-red-600 transition-all duration-500 ease-in-out ${isDragging && "opacity-100 pointer-events-auto scale-110"} ${isOverTrash && "bg-red-900 scale-125 shadow-lg"}`}
             onDragOver={(e) => {e.preventDefault(); setIsOverTrash(true);}}
             onDrop={(e) => {
               dropHandler(e);

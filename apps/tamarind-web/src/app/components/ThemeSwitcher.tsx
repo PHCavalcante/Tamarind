@@ -18,6 +18,10 @@ const handleThemeChange = () => {
 }
 
 return (
+  <div className="flex flex-col gap-2">
+  <h1 className="text-lg font-bold">Theming</h1>
+  <div className="flex items-center gap-2">
+  <p className="text-sm text-gray-500">Change the theme of the app</p>
   <label className="relative inline-flex cursor-pointer items-center">
     <input
       id="switch"
@@ -32,5 +36,7 @@ return (
       {theme === "dark" ? "🌙 Dark Mode" : "☀️ Light Mode"}
     </span>
   </label>
+  </div>
+  </div>
 );
 }

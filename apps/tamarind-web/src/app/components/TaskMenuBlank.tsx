@@ -1,5 +1,5 @@
-import GetUserData from "@/utils/GetUserData";
 import { UseTaskContext } from "@/hooks/taskContext";
+import { useUserToken } from "@/utils/useUserToken";
 import { UseSnackbarContext } from "@/hooks/snackbarContext"
 import { useState, useEffect, useRef } from "react";
 import TextFormatter from "./TextFormatter";
@@ -41,12 +41,10 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
   const emoji = useRef("");
   const userFormattedTextInput = useRef("");
   const { selectedTask, setSelectedTask } = UseTaskContext();
-  const user = GetUserData();
-  if (user) {
-    details.userId = user.id;
-  }
+  const getToken = useUserToken();
+  const [token, setToken] = useState("");
   const list = useRef<listTypes>({
-    userId: details.userId,
+    userId: "",
     type: "list",
     title: details.title,
     tasksTitles: [],
@@ -55,7 +53,17 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
     tasksStatus: isChecked,
   });
 
+  async function fetchToken() {
+    const response = await getToken();
+    if (response) {
+      setToken(response);
+    } else {
+      console.error("Failed to fetch token");
+    }
+  }
+
   useEffect(() => {
+    fetchToken();
     const handleKeyDown = (e: KeyboardEvent) => {
       e.stopPropagation();
       if (
@@ -283,12 +291,12 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
         onClick={
           action === "List"
             ? () => {
-                list.current.userId = details.userId;
+                list.current.userId = token;
                 list.current.createdAt = createdAt;
                 list.current.title = details.title;
                 list.current.tasksCounter = counter.tasksCounter;
                 list.current.tasksStatus = isChecked;
-                postList(list.current);
+                postList(list.current, token);
                 setSelectedTask(null);
                 setSnackbarMessage("List");
                 setOpenSnackbar(true);
@@ -298,7 +306,7 @@ export default function TaskMenuBlank({ action }: TaskMenuBlankProps) {
                 details.title = emoji.current + " " + prev;
                 details.createdAt = createdAt;
                 details.description = userFormattedTextInput.current;
-                postNote(details);
+                postNote(details, token);
                 setSelectedTask(null);
                 setSnackbarMessage("Note");
                 setOpenSnackbar(true);

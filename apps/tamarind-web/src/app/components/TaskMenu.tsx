@@ -1,27 +1,42 @@
 import { UseTaskContext } from "@/hooks/taskContext";
+import { useUserToken } from "@/utils/useUserToken";
 import Image from "next/image";
-import deleteIcon from "../../assets/deleteIcon.svg";
-import edit from "../../assets/edit.svg";
 import Modal from "./Modal";
 import { useState, useRef, useEffect } from "react";
-import timer from "../../assets/timer.svg";
 import Pomodoro from "./Pomodoro";
 import { updateList, updateTask, updateNote } from "@/services/fetchData";
-import inProgress from "../../assets/inProgress.svg"
 import TextFormatter from "./TextFormatter";
 import { isTask, isNote, isList } from "@/utils/dataCheck";
 import { taskTypes } from "@/types/dataTypes";
+import { UseSnackbarContext } from "@/hooks/snackbarContext";
+import deleteIcon from "../../assets/deleteIcon.svg";
+import edit from "../../assets/edit.svg";
+import timer from "../../assets/timer.svg";
+import inProgress from "../../assets/inProgress.svg"
 
 export default function TaskMenu() {
   const { selectedTask } = UseTaskContext();
+  const { setSnackbarMessage, setOpenSnackbar } = UseSnackbarContext();
   const [openModal, setOpenModal] = useState(false);
   const [openPomodoro, setOpenPomodoro] = useState(false);
   const [tasksStates, setTasksStates] = useState<boolean[]>(isList(selectedTask) && selectedTask?.tasksStatus || []);
   const [action, setAction] = useState("");
+  const [token, setToken] = useState<string | null>(null);
   const checkboxValue = useRef(false);
   const [editorReadOnly, setEditorReadOnly] = useState(true);
   const [openContextMenu, setOpenContextMenu] = useState(false);
   const userFormattedTextInput = useRef("");
+  const getToken = useUserToken();
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      const token = await getToken();
+      if (token) {
+        setToken(token);
+      }
+    };
+    fetchToken();
+  }, [getToken]);
 
   useEffect(() => {
     if (isList(selectedTask) && !selectedTask?.tasksStatus) return;
@@ -34,7 +49,7 @@ export default function TaskMenu() {
     const newIsChecked = [...tasksStates];
     newIsChecked[index] = !newIsChecked[index];
     setTasksStates(newIsChecked);
-    if (isList(selectedTask)) updateList(selectedTask._id!, newIsChecked);
+    if (isList(selectedTask) && token) updateList(selectedTask._id!, newIsChecked, token);
   };
    function handleLists() {
     const items = [];
@@ -98,7 +113,16 @@ export default function TaskMenu() {
                     {
                       selectedTask.inProgress = true;
                       selectedTask.type = selectedTask.type;
-                      updateTask(selectedTask);
+                     if (token) {try {
+                      updateTask(selectedTask, token);
+                      setSnackbarMessage("Update");
+                      setOpenSnackbar(true);
+                     } catch (error) {
+                      console.error(error);
+                      setSnackbarMessage("Error");
+                      setOpenSnackbar(true);
+                     }
+                     }
                     }
                   }}
                 >
@@ -183,7 +207,7 @@ export default function TaskMenu() {
                   className="w-full h-10 bg-[#FF5C5C] text-white font-bold rounded-lg"
                   onClick={() => {
                     selectedTask.description = userFormattedTextInput.current;
-                    updateNote(selectedTask);
+                    if (token) updateNote(selectedTask, token);
                   }}
                 >
                   Save changes
@@ -287,12 +311,11 @@ export default function TaskMenu() {
         </div>
       )}
       {HandleVisual()}
-      <Modal
-        openModal={openModal}
+      {openModal && <Modal
         setOpenModal={setOpenModal}
         action={action == "Add new" ? "" : action}
         checkboxValue={checkboxValue}
-      />
+      />}
       <Pomodoro
         minutes={25}
         openModal={openPomodoro}

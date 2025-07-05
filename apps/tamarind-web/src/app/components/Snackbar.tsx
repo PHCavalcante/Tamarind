@@ -56,13 +56,13 @@ export default function Snackbar() {
   }
 }, [openSnackbar]);
 
-
+  if (snackbarMessage === "") return null;
   return (
     <div
       className={
         openSnackbar
           ? `absolute opacity-100 z-10 bottom-8 right-4 p-4 select-none bg-gray-800 text-white transition-all duration-500 ease-in-out rounded-lg border-l-8 ${handleSnackbarStyles()} animate-snackBarIn`
-          : "absolute opacity-0 pointer-events-none animate-snackBarOut"
+          : "absolute opacity-0 pointer-events-none animate-snackBarOut duration-1000"
       }
     >
       <span>{handleAction()}</span>

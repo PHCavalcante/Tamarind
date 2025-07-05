@@ -20,11 +20,21 @@ export async function updateTask(id, newTask){
     const objId = ObjectId.createFromHexString(id);
     return collection.updateOne({_id: new ObjectId(objId)}, {$set: newTask});
 }
-export async function deleteTask(id){
+export async function deleteTask(taskId, userId){
     const dataBase = connection.db("todoDB");
     const collection = dataBase.collection("tasks");
-    const objId = ObjectId.createFromHexString(id);
-    return collection.deleteOne({_id: new ObjectId(objId)});
+    const objId = ObjectId.createFromHexString(taskId);
+    try{
+        const task = await collection.findOne({_id: objId, userId: userId});
+        if(!task){
+            res.status(403).json({message: "Access denied"});
+            return;
+        }
+        return collection.deleteOne({_id: objId});
+    }catch(error){
+        res.status(500).json({message: "Internal server error"});
+    }
+    // return collection.deleteOne({_id: new ObjectId(objId)});
 }
 // export async function registerAccount(newAccount){
 //     const dataBase = connection.db("todoDB");
@@ -42,19 +52,35 @@ export async function getNotes(userId){
     const result = await collection.find({userId: userId}).toArray();
     return result;
 }
-export async function deleteNote(noteId){
+export async function deleteNote(noteId, userId){
     const database = connection.db("todoDB");
     const collection = database.collection("notes");
     const objId = ObjectId.createFromHexString(noteId);
-    const result = await collection.deleteOne({_id: new ObjectId(objId)});
-    return result; 
+    try{
+        const note = await collection.findOne({_id: objId, userId: userId});
+        if(!note){
+            res.status(403).json({message: "Access denied"});
+            return;
+        }
+        return collection.deleteOne({_id: objId});
+    }catch(error){
+        res.status(500).json({message: "Internal server error"});
+    }
 }
-export async function updateNote(id, newNote){
+export async function updateNote(id, newNote, userId){
     const database = connection.db("todoDB");
     const collection = database.collection("notes");
     const objId = ObjectId.createFromHexString(id);
-    const result = await collection.updateOne({_id: new ObjectId(objId)}, {$set: newNote})
-    return result;
+    try{
+        const note = await collection.findOne({_id: objId, userId: userId});
+        if(!note){
+            res.status(403).json({message: "Access denied"});
+            return;
+        }
+        return collection.updateOne({_id: objId}, {$set: newNote});
+    }catch(error){
+        res.status(500).json({message: "Internal server error"});
+    }
 }
 export async function postList(newList){
     const database = connection.db("todoDB");
@@ -67,19 +93,35 @@ export async function getLists(userId){
     const result = await collection.find({ userId: userId }).toArray();
     return result;
 }
-export async function updateList(id, newList){
+export async function updateList(id, newList, userId){
     const database = connection.db("todoDB");
     const collection = database.collection("lists");
     const objId = ObjectId.createFromHexString(id);
-    const result = await collection.updateOne({_id: new ObjectId(objId)}, {$set: newList});
-    return result;   
+    try{
+        const list = await collection.findOne({_id: objId, userId: userId});
+        if(!list){
+            res.status(403).json({message: "Access denied"});
+            return;
+        }
+        return collection.updateOne({_id: objId}, {$set: newList});
+    }catch(error){
+        res.status(500).json({message: "Internal server error"});
+    }
 }
-export async function deleteList(listId){
+export async function deleteList(listId, userId){
      const database = connection.db("todoDB");
      const collection = database.collection("lists");
      const objId = ObjectId.createFromHexString(listId);
-     const result = await collection.deleteOne({ _id: new ObjectId(objId) });
-     return result; 
+     try{
+        const list = await collection.findOne({_id: objId, userId: userId});
+        if(!list){
+            res.status(403).json({message: "Access denied"});
+            return;
+        }
+        return collection.deleteOne({_id: objId});
+     }catch(error){
+        res.status(500).json({message: "Internal server error"});
+     }
 }
 export async function postRoutine(newRoutine){
     const database = connection.db("todoDB");
@@ -92,15 +134,33 @@ export async function getRoutines(userId){
     const result = await collection.find({userId: userId}).toArray();
     return result;
 }
-export async function updateRoutine(id, isCompletedToday){
+export async function updateRoutine(id, isCompletedToday, userId){
     const database = connection.db("todoDB");
     const collection = database.collection("routines");
     const objId = ObjectId.createFromHexString(id);
-    return collection.updateOne({_id: new ObjectId(objId)}, {$set: {isCompletedToday: isCompletedToday}});
+    try{
+        const routine = await collection.findOne({_id: objId, userId: userId});
+        if(!routine){
+            res.status(403).json({message: "Access denied"});
+            return;
+        }
+        return collection.updateOne({_id: objId}, {$set: {isCompletedToday: isCompletedToday}});
+    }catch(error){
+        res.status(500).json({message: "Internal server error"});
+    }
 }
-export async function deleteRoutine(id){
+export async function deleteRoutine(id, userId){
     const database = connection.db("todoDB");
     const collection = database.collection("routines");
     const objId = ObjectId.createFromHexString(id);
-    return collection.deleteOne({_id: new ObjectId(objId)});
+    try{
+        const routine = await collection.findOne({_id: objId, userId: userId});
+        if(!routine){
+            res.status(403).json({message: "Access denied"});
+            return;
+        }
+        return collection.deleteOne({_id: objId});
+    }catch(error){
+        res.status(500).json({message: "Internal server error"});
+    }
 }

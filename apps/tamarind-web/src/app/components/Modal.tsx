@@ -1,4 +1,3 @@
-import GetUserData from "@/utils/GetUserData";
 import { UseTaskContext } from "@/hooks/taskContext";
 import { listTypes, noteTypes, taskTypes } from "@/types/dataTypes";
 import { Dispatch, SetStateAction, useState, useRef, RefObject } from "react";
@@ -11,26 +10,36 @@ import {
   deleteList,
 } from "@/services/fetchData";
 import createdAt from "@/utils/getFormattedDateTime";
+import { useUserToken } from "@/utils/useUserToken";
 import { UseSnackbarContext } from "@/hooks/snackbarContext";
 
 type modalProps = {
-  openModal: boolean;
   setOpenModal: Dispatch<SetStateAction<boolean>>;
   action: string;
   checkboxValue?: RefObject<boolean>;
 };
 
 export default function Modal({
-  openModal,
   setOpenModal,
   action,
   checkboxValue,
 }: modalProps) {
-  const user = GetUserData();
   const { selectedTask, setSelectedTask } = UseTaskContext();
   const [value, setValue] = useState(false);
+  const [token, setToken] = useState("");
   const [descriptionLength, setDescriptionLength] = useState(0);
+  const [titleLength, setTitleLength] = useState(0);
   const { setOpenSnackbar, setSnackbarMessage } = UseSnackbarContext();
+  const getToken = useUserToken();
+  
+ async function fetchToken() {
+    const response = await getToken();
+    if (response) {
+      setToken(response);
+    } else {
+      console.error("Failed to fetch token");
+    }
+  }
 
   const isTask = (task: unknown): task is taskTypes =>
     typeof task === "object" && task !== null && "title" in task;
@@ -49,17 +58,15 @@ export default function Modal({
     title: "",
     description: "",
     scheduleDate: "",
-    userId: "",
+    userId: token,
     createdAt: createdAt,
     type: "",
     isCompleted: false,
     inProgress: false,
   });
-  if (user) {
-    formValues.current.userId = user.id ?? "";
-  }
 
   function handleAction() {
+    fetchToken();
     if (action == "Delete" || action == "Finished") {
       return (
         <div className="flex flex-col items-center text-center">
@@ -90,7 +97,7 @@ export default function Modal({
                 selectedTask.type == "task" &&
                 !selectedTask.isCompleted
                   ? () => {
-                      deleteTask(selectedTask._id!);
+                      deleteTask(selectedTask._id!, token);
                       setOpenModal(false);
                       setSelectedTask(null);
                       setOpenSnackbar(true);
@@ -100,7 +107,7 @@ export default function Modal({
                       isTask(selectedTask) &&
                       selectedTask.isCompleted
                     ? () => {
-                        deleteTask(selectedTask._id!);
+                        deleteTask(selectedTask._id!, token);
                         setOpenModal(false);
                         setSelectedTask(null);
                         setOpenSnackbar(true);
@@ -108,14 +115,14 @@ export default function Modal({
                       }
                     : action == "Delete" && isNote(selectedTask)
                       ? () => {
-                          deleteNote(selectedTask._id!);
+                          deleteNote(selectedTask._id!, token);
                           setSelectedTask(null);
                           setOpenSnackbar(true);
                           setSnackbarMessage("DeleteNote");
                         }
                       : action == "Delete" && isList(selectedTask)
                         ? () => {
-                            deleteList(selectedTask._id!);
+                            deleteList(selectedTask._id!, token);
                             setSelectedTask(null);
                             setOpenSnackbar(true);
                             setSnackbarMessage("DeleteList");
@@ -124,7 +131,7 @@ export default function Modal({
                             if (isTask(selectedTask)) {
                               selectedTask!.isCompleted = true;
                             }
-                            updateTask(selectedTask as taskTypes);
+                            updateTask(selectedTask as taskTypes, token);
                             setOpenModal(false);
                           }
               }
@@ -137,23 +144,27 @@ export default function Modal({
       );
     } else {
       return (
-        <form className="flex flex-col gap-5">
-          <input
-            className="bg-white dark:bg-[var(--darkPaper)] h-10 rounded-lg px-2"
-            required
-            type="text"
-            placeholder={
-              action == "Edit"
-                ? `New ${isTask(selectedTask) && selectedTask?.type} name`
-                : "Task name"
-            }
-            autoFocus
-            autoCapitalize="words"
-            maxLength={60}
-            onChange={(e) => (formValues.current.title = e.target.value)}
-          />
+        <div className="flex flex-col gap-5">
+          <div className="flex items-center justify-between gap-3 w-full">
+            <input
+              className="w-full bg-white dark:bg-[var(--darkPaper)] h-10 rounded-lg px-2"
+              required
+              type="text"
+              placeholder={
+                action == "Edit"
+                  ? `New ${isTask(selectedTask) && selectedTask?.type} name`
+                  : "Task name"
+              }
+              autoFocus
+              autoCapitalize="words"
+              maxLength={60}
+              onChange={(e) => (formValues.current.title = e.target.value)}
+              onInput={(e) => setTitleLength(e.currentTarget.value.length)}
+            />
+            <span className="self-end text-sm">{titleLength}/60</span>
+          </div>
           <textarea
-            className="bg-white dark:bg-[var(--darkPaper)] min-h-40 rounded-lg p-2 max-h-[200px]"
+            className="bg-white dark:bg-[var(--darkPaper)] min-h-40 rounded-lg p-2 max-h-[400px] resize-y"
             maxLength={500}
             placeholder={
               action == "Edit"
@@ -165,7 +176,7 @@ export default function Modal({
               setDescriptionLength(e.target.value.length);
             }}
           />
-          <span className="self-end">{descriptionLength}/500</span>
+          <span className="self-end text-sm">{descriptionLength}/500</span>
           <div className="flex items-center justify-between max-w-[70%]">
             {action == "Add new task" && (
               <div className="flex items-center gap-2">
@@ -218,12 +229,13 @@ export default function Modal({
                     ...formValues.current,
                     type: "task",
                     _id: formValues.current._id ?? undefined,
-                  });
+                  }, token);
                   setOpenModal(false);
                   setOpenSnackbar(true);
                   setSnackbarMessage("Update");
+                  setSelectedTask({...formValues.current, type: "task", _id: formValues.current._id ?? undefined});
                 } else if (action == "Add new task") {
-                  postTask({ ...formValues.current, type: "task" });
+                  postTask({ ...formValues.current, type: "task" }, token);
                   setOpenModal(false);
                   setOpenSnackbar(true);
                   setSnackbarMessage("Add");
@@ -232,7 +244,7 @@ export default function Modal({
                   isTask(selectedTask) &&
                   selectedTask?.type == "note"
                 ) {
-                  updateNote(formValues.current);
+                  updateNote(formValues.current, token);
                   setOpenSnackbar(true);
                   setSnackbarMessage("UpdateNote");
                 }
@@ -245,17 +257,13 @@ export default function Modal({
                 : "task"}
             </button>
           </div>
-        </form>
+        </div>
       );
     }
   }
   return (
     <div
-      className={
-        openModal
-          ? "block content-center fixed z-10 left-0 top-0 w-full h-full overflow-auto bg-[rgba(0,0,0,0.4)] backdrop-blur-sm"
-          : "hidden"
-      }
+      className={"block content-center fixed z-10 left-0 top-0 w-full h-full overflow-auto bg-[rgba(0,0,0,0.4)] backdrop-blur-sm"}
     >
       <div
         onClick={(e) => e.stopPropagation()}

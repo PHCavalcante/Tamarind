@@ -24,6 +24,16 @@ export type listTypes = Pick<
   tasksTitles: string[];
 };
 
+export type RoutineType = {
+  _id?: string | undefined;
+  userId: string;
+  name: string;
+  weekday: string;
+  isCompletedToday: boolean;
+  isNew: boolean;
+};
+
+
 export type combination = taskTypes & listTypes;
 
 export type ViewType = "List" | "Note" | "Kanban" | "Routine";
