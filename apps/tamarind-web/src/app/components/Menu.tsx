@@ -30,7 +30,7 @@ function Tooltip({text, ref, position, isOpen} : {text: string, ref: React.RefOb
     <span
       ref={ref}
       className={`absolute z-10 w-fit -top-6 px-2 py-1 text-white text-sm rounded bg-[var(--accent)] 
-                pointer-events-none opacity-0 transition-all ease-out duration-700 ${position ?? "-left-2"} ${!isOpen && "hidden"}`}
+                pointer-events-none opacity-0 transition-all ease-out duration-300 ${position ?? "-left-2"} ${!isOpen && "hidden"}`}
     >
       {text}
       <span
@@ -45,13 +45,13 @@ function Tooltip({text, ref, position, isOpen} : {text: string, ref: React.RefOb
 }
 
   const showTooltip = (tooltipRef: React.RefObject<HTMLSpanElement>) => {
-    if (tooltipRef) {
+    if (tooltipRef.current) {
       tooltipRef.current.style.opacity = "1";
     }
   };
 
   const hideTooltip = (tooltipRef: React.RefObject<HTMLSpanElement>) => {
-    if (tooltipRef) {
+    if (tooltipRef.current) {
       tooltipRef.current.style.opacity = "0";
     }
   };
@@ -63,9 +63,9 @@ export default function Menu() {
   const [notes, setNotes] = useState<noteTypes[]>([]);
   const [lists, setLists] = useState<listTypes[]>([]);
   const [searchItems, setSearchItems] = useState<JSX.Element[]>([]);
-  const inputSearchValue = useRef("");
- const routineTooltipRef = useRef<HTMLSpanElement>(null!);
- const kanbanTooltipRef = useRef<HTMLSpanElement>(null!);
+  const [searchValue, setSearchValue] = useState("");
+  const routineTooltipRef = useRef<HTMLSpanElement>(null!);
+  const kanbanTooltipRef = useRef<HTMLSpanElement>(null!);
   const { setSelectedTask, selectedTask } = UseTaskContext();
   const getToken = useUserToken();
   const { openSnackbar } = UseSnackbarContext();
@@ -104,7 +104,7 @@ export default function Menu() {
     return items.map((item) => (
       <li
         key={item._id}
-        className="flex gap-2 my-1 text-ellipsis whitespace-nowrap overflow-hidden transition ease-in delay-100 rounded hover:bg-[var(--paper)] dark:hover:bg-[var(--darkPaper)]"
+        className="flex gap-2 my-1 text-ellipsis whitespace-nowrap overflow-hidden transition ease-in delay-100 rounded hover:bg-[var(--paper)] dark:hover:bg-[var(--darkPaper)] hover-lift"
         onClick={() => setSelectedTask(item)}
       >
         <Image src={arrow} className="dark:invert" alt={`${type} icon`} />
@@ -142,19 +142,19 @@ export default function Menu() {
 
     const searchResults = filteredData.map((item) => (
       <li
-        className="flex justify-between cursor-pointer hover:bg-[var(--paper)] px-3"
+        className="flex justify-between cursor-pointer hover:bg-[var(--paper)] px-3 py-2 hover-lift transition-colors duration-200"
         key={item._id}
         onClick={() => {
           setSelectedTask(item);
           setSearchItems([]);
-          inputSearchValue.current = "";
+          setSearchValue("");
         }}
       >
         <p
-          className="font-bold"
+          className="font-bold truncate"
           dangerouslySetInnerHTML={{ __html: item.title }}
         ></p>
-        <p className="italic">{item.type}</p>
+        <p className="italic text-sm opacity-70">{item.type}</p>
       </li>
     ));
 
@@ -170,7 +170,7 @@ export default function Menu() {
     <div>
       <div className="flex flex-row items-center justify-between">
         <div className="flex items-center content-center gap-[14px]">
-          <button onClick={toggle}>
+          <button onClick={toggle} className="hover-lift">
             <Image
               src={isOpen ? dropdown : arrowRight}
               width={22}
@@ -178,10 +178,10 @@ export default function Menu() {
               className="dark:invert"
             />
           </button>
-          <h2>{title}</h2>
+          <h2 className="font-semibold">{title}</h2>
         </div>
         {type === "tasks" && (
-          <button onClick={() => setOpenModal((prev) => !prev)}>
+          <button onClick={() => setOpenModal((prev) => !prev)} className="hover-lift">
             <Image
               src={add}
               className="dark:invert"
@@ -190,7 +190,7 @@ export default function Menu() {
           </button>
         )}
         {type === "notes" && (
-          <button onClick={() => setSelectedTask("Note")}>
+          <button onClick={() => setSelectedTask("Note")} className="hover-lift">
             <Image
               src={add}
               className="dark:invert"
@@ -199,7 +199,7 @@ export default function Menu() {
           </button>
         )}
         {type === "lists" && (
-          <button onClick={() => setSelectedTask("List")}>
+          <button onClick={() => setSelectedTask("List")} className="hover-lift">
             <Image
               src={add}
               className="dark:invert"
@@ -219,7 +219,7 @@ export default function Menu() {
     <div
       className={
         isOpen
-          ? "absolute z-10 md:relative md:min-w-96 md:w-96 flex flex-col h-screen transition-all duration-500 ease-in-out bg-[var(--background)] dark:bg-[var(--darkBackground)] dark:text-[var(--darkText)] px-[30px] shadow-lg shadow-gray-500/50 dark:border-[var(--darkBorder)] border-[var(--border)] select-none"
+          ? "absolute z-10 md:relative md:min-w-96 md:w-96 flex flex-col h-screen transition-all duration-500 ease-in-out bg-[var(--background)] dark:bg-[var(--darkBackground)] dark:text-[var(--darkText)] px-[30px] shadow-lg shadow-gray-500/50 dark:border-[var(--darkBorder)] border-[var(--border)] select-none animate-slide-in"
           : "flex flex-col h-screen bg-[var(--background)] dark:bg-[var(--darkBackground)] dark:text-[var(--darkText)] shadow-lg shadow-gray-500/50 px-2 items-center gap-3 transition-all ease-in-out duration-500"
       }
     >
@@ -270,25 +270,25 @@ export default function Menu() {
         <input
           className="rounded-lg px-2 flex-1 h-auto bg-transparent focus:outline-none dark"
           type="search"
-          value={inputSearchValue.current}
+          value={searchValue}
           placeholder="Search for tasks, notes or lists..."
           maxLength={50}
           onChange={(e) => {
-            inputSearchValue.current = e.target.value;
+            setSearchValue(e.target.value);
             parseSearch(e.target.value);
           }}
         />
         <div
           className={
-            inputSearchValue.current !== ""
-              ? "z-10 absolute text-black flex flex-col h-auto min-h-7 top-7 left-0 right-0 border-2 border-[var(--border)] bg-[var(--paper)] dark:bg-[var(--paper)] dark:border-[var(--darkBorder)] transition-all duration-300 animate-modal "
+            searchValue !== ""
+              ? "z-10 absolute text-black flex flex-col h-auto min-h-7 top-7 left-0 right-0 border-2 border-[var(--border)] bg-[var(--paper)] dark:bg-[var(--paper)] dark:border-[var(--darkBorder)] transition-all duration-300 animate-fade-in rounded-lg shadow-lg"
               : "opacity-0 w-0 h-0 pointer-events-none"
           }
         >
-          {searchItems.length === 0 && (
-            <p className="p-1 text-center">No items found</p>
+          {searchItems.length === 0 && searchValue !== "" && (
+            <p className="p-3 text-center text-gray-500">No items found</p>
           )}
-          <ul className="flex flex-col gap-1">{searchItems}</ul>
+          <ul className="flex flex-col gap-1 max-h-60 overflow-y-auto">{searchItems}</ul>
         </div>
       </form>
       <div
@@ -300,21 +300,19 @@ export default function Menu() {
       >
         <Tooltip text="Routine" ref={routineTooltipRef} isOpen={isOpen} />
         <button
-          className={`flex my-2 border-2 p-[2px] rounded-lg hover:bg-[var(--paper)] dark:hover:bg-[var(--darkPaper)] hover:scale-110 ${selectedTask === "Routine" ? "border-[var(--accent)] dark:border-[var(--darkAccent)]" : "border-transparent"}`}
+          className={`flex my-2 border-2 p-[2px] rounded-lg hover:bg-[var(--paper)] dark:hover:bg-[var(--darkPaper)] hover:scale-110 hover-lift transition-all duration-200 ${selectedTask === "Routine" ? "border-[var(--accent)] dark:border-[var(--darkAccent)]" : "border-transparent"}`}
           onClick={() => setSelectedTask("Routine")}
           onMouseEnter={() => showTooltip(routineTooltipRef)}
           onMouseLeave={() => hideTooltip(routineTooltipRef)}
-         
         >
           <Image src={routine} className="dark:invert" alt="Routine" />
         </button>
         <Tooltip text="Kanban" ref={kanbanTooltipRef} position="left-6" isOpen={isOpen} />
         <button
-          className={`lex my-2 border-2 p-[2px] rounded-lg hover:bg-[var(--paper)] dark:hover:bg-[var(--darkPaper)] hover:scale-110 ${selectedTask === "Kanban" ? "border-[var(--accent)] dark:border-[var(--darkAccent)]" : "border-transparent"}`}
+          className={`flex my-2 border-2 p-[2px] rounded-lg hover:bg-[var(--paper)] dark:hover:bg-[var(--darkPaper)] hover:scale-110 hover-lift transition-all duration-200 ${selectedTask === "Kanban" ? "border-[var(--accent)] dark:border-[var(--darkAccent)]" : "border-transparent"}`}
           onClick={() => setSelectedTask("Kanban")}
           onMouseEnter={() => showTooltip(kanbanTooltipRef)}
           onMouseLeave={() => hideTooltip(kanbanTooltipRef)}
-         
         >
           <Image src={kanban} className="dark:invert" alt="Kanban view icon" />
         </button>
