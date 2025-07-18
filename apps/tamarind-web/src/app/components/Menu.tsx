@@ -168,7 +168,7 @@ export default function Menu() {
     type: string
   ) => (
     <div>
-      <div className="flex flex-row items-center justify-between">
+      <div className="flex flex-row items-center justify-between transition-all duration-300 ease-in-out">
         <div className="flex items-center content-center gap-[14px]">
           <button onClick={toggle} className="hover-lift">
             <Image
@@ -181,7 +181,7 @@ export default function Menu() {
           <h2 className="font-semibold">{title}</h2>
         </div>
         {type === "tasks" && (
-          <button onClick={() => setOpenModal((prev) => !prev)} className="hover-lift">
+          <button onClick={() => setOpenModal((prev) => !prev)} className="hover:scale-110 transition-all duration-200">
             <Image
               src={add}
               className="dark:invert"
@@ -190,7 +190,7 @@ export default function Menu() {
           </button>
         )}
         {type === "notes" && (
-          <button onClick={() => setSelectedTask("Note")} className="hover-lift">
+          <button onClick={() => setSelectedTask("Note")} className="hover:scale-110 transition-all duration-200">
             <Image
               src={add}
               className="dark:invert"
@@ -199,7 +199,7 @@ export default function Menu() {
           </button>
         )}
         {type === "lists" && (
-          <button onClick={() => setSelectedTask("List")} className="hover-lift">
+            <button onClick={() => setSelectedTask("List")} className="hover:scale-110 transition-all duration-200">
             <Image
               src={add}
               className="dark:invert"
@@ -208,10 +208,10 @@ export default function Menu() {
           </button>
         )}
       </div>
-      <ul className={isOpen ? "my-2 mx-2 w-full" : "hidden"}>
+      <ul className={`transition-all duration-300 ease-in-out overflow-hidden ${isOpen ? "max-h-96 opacity-100 my-2 mx-2" : "max-h-0 opacity-0 my-0 mx-2"}`}>
         {parseItems(items as combination[], type)}
       </ul>
-      <hr className="border-1 border-neutral-700 my-[10px]" />
+      <hr className="border-t border-dashed border-[var(--border)] dark:border-[var(--darkBorder)] my-3 opacity-40" />
     </div>
   );
 
@@ -300,7 +300,7 @@ export default function Menu() {
       >
         <Tooltip text="Routine" ref={routineTooltipRef} isOpen={isOpen} />
         <button
-          className={`flex my-2 border-2 p-[2px] rounded-lg hover:bg-[var(--paper)] dark:hover:bg-[var(--darkPaper)] hover:scale-110 hover-lift transition-all duration-200 ${selectedTask === "Routine" ? "border-[var(--accent)] dark:border-[var(--darkAccent)]" : "border-transparent"}`}
+          className={`flex my-2 border-2 p-[2px] rounded-lg hover:bg-[var(--paper)] dark:hover:bg-[var(--darkPaper)] hover:scale-110 transition-all duration-200 ${selectedTask === "Routine" ? "border-[var(--accent)] dark:border-[var(--darkAccent)]" : "border-transparent"}`}
           onClick={() => setSelectedTask("Routine")}
           onMouseEnter={() => showTooltip(routineTooltipRef)}
           onMouseLeave={() => hideTooltip(routineTooltipRef)}
