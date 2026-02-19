@@ -3,7 +3,7 @@ import { taskTypes, noteTypes, listTypes, RoutineType } from "@/types/dataTypes"
 
 export async function fetchTasks(token: string){
     try{
-        const response = await axios.get("https://tamarind-api.onrender.com/tasks", {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/tasks`, {
           headers: {
             Authorization: `Bearer ${token}`,
           }
@@ -16,7 +16,7 @@ export async function fetchTasks(token: string){
 export async function postTask(newTask: taskTypes, token: string){
     try{
         const response = await axios.post(
-          "https://tamarind-api.onrender.com/tasks",
+          `${process.env.NEXT_PUBLIC_API_URL}/tasks`,
           newTask,
           {
             headers: {
@@ -32,7 +32,7 @@ export async function postTask(newTask: taskTypes, token: string){
 export async function updateTask(task : taskTypes, token: string){
     try{
         const response = await axios.put(
-          `https://tamarind-api.onrender.com/tasks/${task._id}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/tasks/${task._id}`,
           {
             title: task.title,
             description: task.description,
@@ -57,7 +57,7 @@ export async function markTaskAsCompleted(task: taskTypes, token: string){
   console.log("Marking task as completed:", task);
     try{
         const response = await axios.put(
-          `https://tamarind-api.onrender.com/tasks/${task._id}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/tasks/${task._id}`,
           {
             title: task.title,
             description: task.description,
@@ -79,7 +79,7 @@ export async function markTaskAsCompleted(task: taskTypes, token: string){
 export async function deleteTask(taskId : string, token: string){
     try{
         const response = await axios.delete(
-          `https://tamarind-api.onrender.com/tasks/${taskId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/tasks/${taskId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -93,7 +93,7 @@ export async function deleteTask(taskId : string, token: string){
 }
 export async function fetchNotes(token: string){
     try{
-        const response = await axios.get("https://tamarind-api.onrender.com/notes", {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/notes`, {
           headers: {
             Authorization: `Bearer ${token}`,
           }
@@ -106,7 +106,7 @@ export async function fetchNotes(token: string){
 export async function postNote(newNote:noteTypes, token: string){
     try{
         const response = await axios.post(
-          "https://tamarind-api.onrender.com/notes",
+          `${process.env.NEXT_PUBLIC_API_URL}/notes`,
           newNote,
           {
             headers: {
@@ -122,7 +122,7 @@ export async function postNote(newNote:noteTypes, token: string){
 export async function deleteNote(noteId: string, token: string){
     try{
         const response = await axios.delete(
-          `https://tamarind-api.onrender.com/notes/${noteId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/notes/${noteId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -137,7 +137,7 @@ export async function deleteNote(noteId: string, token: string){
 export async function updateNote(note: noteTypes, token: string){
     try{
         const response = await axios.put(
-          `https://tamarind-api.onrender.com/notes/${note._id}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/notes/${note._id}`,
           {
             title: note.title,
             description: note.description,
@@ -157,7 +157,7 @@ export async function updateNote(note: noteTypes, token: string){
 }
 export async function fetchLists(token: string){
     try{
-        const response = await axios.get("https://tamarind-api.onrender.com/lists", {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/lists`, {
           headers: {
             Authorization: `Bearer ${token}`,
           }
@@ -170,7 +170,7 @@ export async function fetchLists(token: string){
 export async function postList(newList: listTypes, token: string){
     try{
         const response = await axios.post(
-          "https://tamarind-api.onrender.com/lists",
+          `${process.env.NEXT_PUBLIC_API_URL}/lists`,
           newList,
           {
             headers: {
@@ -186,7 +186,7 @@ export async function postList(newList: listTypes, token: string){
 export async function updateList(listId: string, tasksStatus : boolean[], token: string){
     try{
         const response = await axios.put(
-          `https://tamarind-api.onrender.com/lists/${listId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/lists/${listId}`,
           {
             tasksStatus: tasksStatus,
           },
@@ -204,7 +204,7 @@ export async function updateList(listId: string, tasksStatus : boolean[], token:
 export async function deleteList(listId: string, token: string){
      try {
        const response = await axios.delete(
-         `https://tamarind-api.onrender.com/lists/${listId}`,
+         `${process.env.NEXT_PUBLIC_API_URL}/lists/${listId}`,
          {
            headers: {
              Authorization: `Bearer ${token}`,
@@ -218,7 +218,7 @@ export async function deleteList(listId: string, token: string){
 }
 export async function fetchRoutines(token: string) {
     try {
-        const response = await axios.get("https://tamarind-api.onrender.com/routines", {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/routines`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -232,7 +232,7 @@ export async function postRoutine(newRoutine: RoutineType[], token: string) {
   console.log("Posting routine in fetchData function:", newRoutine);
     try {
         const response = await axios.post(
-          "https://tamarind-api.onrender.com/routines",
+          `${process.env.NEXT_PUBLIC_API_URL}/routines`,
           newRoutine,
           {
             headers: {
@@ -252,7 +252,7 @@ export async function deleteRoutine(routineId: string, token: string) {
   console.log("Deleting routine with ID:", routineId);
     try {
         const response = await axios.delete(
-          `https://tamarind-api.onrender.com/routines/${routineId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/routines/${routineId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -269,7 +269,7 @@ export async function deleteRoutine(routineId: string, token: string) {
 }
 export async function updateRoutine(routineId: string, token: string, isCompletedToday: boolean) {
   try {
-    await axios.patch(`https://tamarind-api.onrender.com/routines/${routineId}`, {
+    await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/routines/${routineId}`, {
       isCompletedToday: isCompletedToday
     },{
       headers: {
