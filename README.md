@@ -1,7 +1,10 @@
-# 🌳 Tamarind
+# Tamarind
 
 <div align="center">
 
+<div align="center">
+   <img src="./apps/tamarind-web//src/assets/logo.svg" width="300px" height="300px" />
+</div>
 **Uma aplicação moderna de gerenciamento de tarefas construída com arquitetura de monorepo**
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -156,7 +159,7 @@ Contribuições são bem-vindas! Por favor:
 
 ## 📄 Licença
 
-Este projeto está sob a licença ISC. Veja o arquivo `LICENSE` para mais detalhes.
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](./LICENSE) para mais detalhes.
 
 ---
 
